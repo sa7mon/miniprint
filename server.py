@@ -1,28 +1,30 @@
 import socket
 import time
 import os
-from os.path import isfile, join, abspath
+from os.path import isfile, join, abspath, exists
 
 filesystem_dir = "/mnt/hgfs/faux-printer/filesystem"
+
+
+def get_parameters(command):
+    request_parameters = {}
+    for item in command.split(" "):
+        if ("=" in item):
+            request_parameters[item.split("=")[0]] = item.split("=")[1]
+
+    return request_parameters
+
 
 def command_fsdirlist(conn, request):
     # request - ['@PJL FSDIRLIST NAME="0:/" ENTRY=1 COUNT=65535', '@PJL ECHO DELIMITER22148', '', '\x1b%-12345X']
     delimiter = request[1].encode('UTF-8')
     
-    request_parameters = {}
-    for item in request[0].split(" "):
-        if ("=" in item):
-            request_parameters[item.split("=")[0]] = item.split("=")[1]
-
+    request_parameters = get_parameters(request[0])
 
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
     print("Requested dir: '" + requested_dir + "'")
     resolved_dir = abspath(filesystem_dir + requested_dir)
-
-    # Check here if resolved_dir is equal to or child of filesystem_dir
     print("resolved_dir: ", resolved_dir)
-    # print(resolved_dir[0:len(filesystem_dir)])
-    # print("abspath: ", abspath(resolved_dir))
     if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
         print("WARNING: Path traversal attack attempted")
         resolved_dir = filesystem_dir
@@ -34,10 +36,33 @@ def command_fsdirlist(conn, request):
         else:
             return_entries += "\r\n" + entry + " TYPE=DIR"
 
-    response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1' + return_entries.encode('UTF-8') + delimiter
+    response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries.encode('UTF-8') + delimiter
     print("[Response] " + str(response))
     conn.send(response)
     
+
+def command_fsquery(conn, request):
+    delimiter = request[1].encode('UTF-8')
+    request_parameters = get_parameters(request[0])
+
+    requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
+    print("Requested item: ", requested_item)
+    resolved_item = abspath(filesystem_dir + requested_item)
+    print("Resolved item: ", resolved_item)
+    if resolved_item[0:len(filesystem_dir)] != filesystem_dir:
+        print("WARNING: Path traversal attack attempted")
+        resolved_item = filesystem_dir
+
+    return_data = ''
+    if exists(resolved_item):
+        if isfile(resolved_item):
+            pass
+        else:
+            return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
+
+    response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
+    print("[Response] " + str(response))
+    conn.send(response)
 
 def main():
     host = "localhost"
@@ -71,10 +96,8 @@ def main():
             conn.send(response)
         elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
             command_fsdirlist(conn, dataArray)
-            # print("[Interpret] user has done 'ls'")
-            # response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR\r\nPostScript TYPE=DIR' + dataArray[1].encode('UTF-8')
-            # print("[Response] " + str(response))
-            # conn.send(response)
+        elif (dataArray[0][0:12] == "@PJL FSQUERY"):
+            command_fsquery(conn, dataArray)
         else:
             print("Unknown command:")
             print(dataArray)
