@@ -2,6 +2,7 @@ import socket
 import time
 import os
 from os.path import isfile, join, abspath, exists
+import logging
 
 filesystem_dir = "/mnt/hgfs/faux-printer/filesystem"
 
@@ -65,6 +66,22 @@ def command_fsquery(conn, request):
     conn.send(response)
 
 def main():
+    logger = logging.getLogger('miniprint')
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('activity.log')
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+    
     host = "localhost"
     port = 9100
 
