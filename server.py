@@ -3,9 +3,10 @@ import time
 import os
 from os.path import isfile, join, abspath, exists
 import logging
+from pathlib import Path
 
 filesystem_dir = "/mnt/hgfs/faux-printer/filesystem"
-
+log_location = Path("/home/dan/miniprint.log")
 
 def get_parameters(command):
     request_parameters = {}
@@ -16,18 +17,17 @@ def get_parameters(command):
     return request_parameters
 
 
-def command_fsdirlist(conn, request):
-    # request - ['@PJL FSDIRLIST NAME="0:/" ENTRY=1 COUNT=65535', '@PJL ECHO DELIMITER22148', '', '\x1b%-12345X']
+def command_fsdirlist(conn, logger, request):
     delimiter = request[1].encode('UTF-8')
-    
     request_parameters = get_parameters(request[0])
+    logger.info("[Receive] FSDIRLIST : " + request_parameters["NAME"])
 
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
-    print("Requested dir: '" + requested_dir + "'")
+    logger.debug("Requested dir: '" + requested_dir + "'")
     resolved_dir = abspath(filesystem_dir + requested_dir)
-    print("resolved_dir: ", resolved_dir)
+    logger.debug("resolved_dir: " + resolved_dir)
     if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
-        print("WARNING: Path traversal attack attempted")
+        logger.warn("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_dir))
         resolved_dir = filesystem_dir
 
     return_entries = ""
@@ -38,38 +38,46 @@ def command_fsdirlist(conn, request):
             return_entries += "\r\n" + entry + " TYPE=DIR"
 
     response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries.encode('UTF-8') + delimiter
-    print("[Response] " + str(response))
+    logger.info("[Response] " + str(return_entries.encode('UTF-8')))
     conn.send(response)
     
 
-def command_fsquery(conn, request):
+def command_fsquery(conn, logger, request):
     delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request[0])
+    logger.info("[Receive] FSQUERY : " + request_parameters["NAME"])
 
     requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
-    print("Requested item: ", requested_item)
+    logger.debug("Requested item: " + requested_item)
     resolved_item = abspath(filesystem_dir + requested_item)
-    print("Resolved item: ", resolved_item)
+    logger.debug("Resolved item: " + resolved_item)
     if resolved_item[0:len(filesystem_dir)] != filesystem_dir:
-        print("WARNING: Path traversal attack attempted")
+        logger.warn("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_item))
         resolved_item = filesystem_dir
 
     return_data = ''
     if exists(resolved_item):
-        if isfile(resolved_item):
+        if isfile(resolved_item): # TODO: Get files to work and return "no" when item doesn't exist
             pass
         else:
             return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
 
     response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
-    print("[Response] " + str(response))
+    logger.info("[Response] " + str(return_data.encode('UTF-8')))
     conn.send(response)
+
+
+def command_ustatusoff(conn, logger, request):
+    logger.info("[Interpret] User wants status request. Sending empty ACK")
+    logger.info("[Response] (empty ACK)")
+    conn.send(b'')
+
 
 def main():
     logger = logging.getLogger('miniprint')
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('activity.log')
+    fh = logging.FileHandler(log_location)
     fh.setLevel(logging.DEBUG)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -81,7 +89,7 @@ def main():
     # add the handlers to the logger
     logger.addHandler(fh)
     logger.addHandler(ch)
-    
+
     host = "localhost"
     port = 9100
 
@@ -90,34 +98,33 @@ def main():
 
     mySocket.listen(1)
     conn, addr = mySocket.accept()
-    print("Connection from:" + str(addr))
+    logger.info("Connection from:" + str(addr))
 
     while True:
         data = conn.recv(1024).strip()
         dataArray = data.decode('UTF-8').split('\r\n')
         dataArray[0] = dataArray[0].replace('\x1b%-12345X', '')
-        print('[Receive] ' + str(dataArray))
+        logger.debug('[Receive-Raw] ' + str(dataArray))
 
         if (dataArray[0] == "@PJL USTATUSOFF"):
-            print("[Interpret] User wants status request. Sending empty ACK")
-            conn.send(b'')
+            command_ustatusoff(conn, logger, dataArray)
         elif (dataArray[0] == "@PJL INFO ID"):
-            print("[Interpret] User wants ID")
+            logger.info("[Interpret] User wants ID")
             response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+dataArray[1].encode('UTF-8')
-            print("[Response]  " + str(response))
+            logger.info("[Response]  " + str(response))
             conn.send(response)
         elif (dataArray[0] == "@PJL INFO STATUS"):
-            print("[Interpret] User wants info-status")
+            logger.info("[Interpret] User wants info-status")
             response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+dataArray[1].encode('UTF-8')
-            print("[Response] " + str(response))
+            logger.info("[Response] " + str(response))
             conn.send(response)
         elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
-            command_fsdirlist(conn, dataArray)
+            command_fsdirlist(conn, logger, dataArray)
         elif (dataArray[0][0:12] == "@PJL FSQUERY"):
-            command_fsquery(conn, dataArray)
+            command_fsquery(conn, logger, dataArray)
         else:
-            print("Unknown command:")
-            print(dataArray)
+            logger.info("Unknown command:")
+            logger.info(dataArray)
             conn.close()
             break
 
@@ -126,4 +133,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
