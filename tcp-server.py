@@ -101,9 +101,9 @@ def command_info_id(self, request):
 
 
 def command_info_status(self, request):
-    logger.info("[Interpret] User wants info-status")
+    logger.info("info_status - request - Client requests status")
     response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+request[1].encode('UTF-8')
-    logger.info("[Response] " + str(response))
+    logger.info("info_status - response - " + str(response))
     self.request.sendall(response)
 
 
