@@ -69,10 +69,7 @@ def command_fsquery(self, request):
 def command_ustatusoff(self, request):
     print("[Interpret] User wants status request. Sending empty ACK")
     print("[Response] (empty ACK)")
-    # conn.send(b'')
     self.request.sendall(b'')
-
-
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
@@ -87,7 +84,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         # self.request is the TCP socket connected to the client
         print("Connection from: " + self.client_address[0])
-        print(self)
 
         emptyRequest = False
         while emptyRequest == False: # Keep listening for requests from this client until they send us nothing
@@ -97,7 +93,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             dataArray[0] = dataArray[0].replace('\x1b%-12345X', '')
             print('[Receive-Raw] ' + str(dataArray))
 
-            if dataArray[0] == '':
+            if dataArray[0] == '':  # If we're sent an empty request, close the connection
                 emptyRequest = True
                 break
 
@@ -120,10 +116,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     command_fsquery(self, dataArray)
                 else:
                     print("Unknown command: " + str(dataArray))
-                    # print(dataArray)
-                    # conn.send(b'')
-                    # conn.close()
-                    # break
+
             except Exception as e:
                 print("Caught error: ", str(e))
 
@@ -132,7 +125,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 if __name__ == "__main__":
     HOST, PORT = "localhost", 9100
 
-    # Create the server, binding to localhost on port 9999
     with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
         # Activate the server; this will keep running until you
         # interrupt the program with Ctrl-C
