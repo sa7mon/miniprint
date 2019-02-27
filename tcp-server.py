@@ -40,8 +40,10 @@ def get_parameters(command):
 def command_fsdirlist(self, request):
     delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request[0])
+    # logger.info("fsdirlist - request - directory: " + request_parameters["NAME"])
+
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
-    logger.info("fsdirlist - request - Requested dir: '" + requested_dir + "'")
+    logger.debug("fsdirlist - request - Requested dir: '" + requested_dir + "'")
     resolved_dir = abspath(filesystem_dir + requested_dir)
     logger.debug("fsdirlist - request - resolved_dir: " + resolved_dir)
     if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
@@ -91,9 +93,9 @@ def command_ustatusoff(self, request):
     self.request.sendall(b'')
 
 
-def command_info_id(self, request, printer):
+def command_info_id(self, request):
     logger.info("info_id - request - ID requested")
-    response = b'@PJL INFO ID\r\n' + printer.id + '\r\n\x1b' + request[1].encode('UTF-8')
+    response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+request[1].encode('UTF-8')
     logger.info("info_id - response - " + str(response))
     self.request.sendall(response)
 
@@ -103,17 +105,6 @@ def command_info_status(self, request):
     response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+request[1].encode('UTF-8')
     logger.info("info_status - response - " + str(response))
     self.request.sendall(response)
-
-
-class Printer:
-    # kind = 'canine'         # class variable shared by all instances
-
-    def __init__(self, id="hp LaserJet 4200", code=10001, ready_msg="Ready", 
-                    online=True):
-        self.id = id
-        self.code = code
-        self.ready_msg = ready_msg
-        self.online = online
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
@@ -128,8 +119,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         # self.request is the TCP socket connected to the client
         logger.info("handle - open_conn - " + self.client_address[0])
-        printer = Printer()
-        
+
         emptyRequest = False
         while emptyRequest == False:
             
@@ -153,7 +143,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 if (dataArray[0] == "@PJL USTATUSOFF"):
                     command_ustatusoff(self, dataArray)
                 elif (dataArray[0] == "@PJL INFO ID"):
-                    command_info_id(self, dataArray, printer=printer)
+                    command_info_id(self, dataArray)
                 elif (dataArray[0] == "@PJL INFO STATUS"):
                     command_info_status(self, dataArray)
                 elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
