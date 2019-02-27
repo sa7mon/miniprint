@@ -100,9 +100,9 @@ def command_info_id(self, request, printer):
     self.request.sendall(response)
 
 
-def command_info_status(self, request):
+def command_info_status(self, request, printer):
     logger.info("info_status - request - Client requests status")
-    response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+request[1].encode('UTF-8')
+    response = ('@PJL INFO STATUS\r\nCODE=' + str(printer.code) + '\r\nDISPLAY=' + printer.ready_msg + '\r\nONLINE=' + str(printer.online) + request[1]).encode('UTF-8')
     logger.info("info_status - response - " + str(response))
     self.request.sendall(response)
 
@@ -155,7 +155,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 elif (dataArray[0] == "@PJL INFO ID"):
                     command_info_id(self, dataArray, printer=printer)
                 elif (dataArray[0] == "@PJL INFO STATUS"):
-                    command_info_status(self, dataArray)
+                    command_info_status(self, dataArray, printer=printer)
                 elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
                     command_fsdirlist(self, dataArray)
                 elif (dataArray[0][0:12] == "@PJL FSQUERY"):
