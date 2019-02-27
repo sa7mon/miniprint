@@ -1,5 +1,12 @@
 A medium interaction printer honeypot
 
+miniprint acts like a standard networked printer that has been "accidentally" exposed to the public internet
+
+It speaks the Printer Job Language (PJL) over the RAW "protocol".
+
+## Logs
+Logs are in format: `time - loglevel - method - operation - message`
+
 ## Requirements
 * Python >= 3.6
 
