@@ -4,10 +4,12 @@ import os
 from os.path import isfile, join, abspath, exists
 from pathlib import Path
 import logging
+import select
 
 filesystem_dir = "/home/ubuntu/workspace/filesystem"
 # log_location = Path("./miniprint.log")
 
+conn_timeout = 10 # Seconds to wait for request before closing connection
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
@@ -86,15 +88,15 @@ def command_fsquery(self, request):
 
 
 def command_ustatusoff(self, request):
-    logger.info("[Interpret] User wants status request. Sending empty ACK")
-    logger.info("[Response] (empty ACK)")
+    logger.info("ustatusoff - request - Request received")
+    logger.info("ustatusoff - response - Sending empty reply")
     self.request.sendall(b'')
 
 
 def command_info_id(self, request):
-    logger.info("[Interpret] User wants ID")
+    logger.info("info_id - request - ID requested")
     response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+request[1].encode('UTF-8')
-    logger.info("[Response]  " + str(response))
+    logger.info("info_id - response - " + str(response))
     self.request.sendall(response)
 
 
@@ -119,7 +121,14 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         logger.info("handle - open_conn - " + self.client_address[0])
 
         emptyRequest = False
-        while emptyRequest == False: # Keep listening for requests from this client until they send us nothing
+        while emptyRequest == False:
+            
+            # Wait a maximum of conn_timeout seconds for another request
+            # If conn_timeout elapses without request, close the connection
+            ready = select.select([self.request], [], [], conn_timeout)
+            if not ready[0]:
+                break
+            
             self.data = self.request.recv(1024).strip()
             dataArray = self.data.decode('UTF-8').split('\r\n')
 
