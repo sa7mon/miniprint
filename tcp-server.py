@@ -3,9 +3,28 @@ import time
 import os
 from os.path import isfile, join, abspath, exists
 from pathlib import Path
+import logging
 
-filesystem_dir = "/Volumes/DATA/Projects/miniprint/filesystem"
-log_location = Path("./miniprint.log")
+filesystem_dir = "/home/ubuntu/workspace/filesystem"
+# log_location = Path("./miniprint.log")
+
+
+logger = logging.getLogger('miniprint')
+logger.setLevel(logging.DEBUG)
+# # create file handler which logs even debug messages
+# # fh = logging.FileHandler(log_location)
+# # fh.setLevel(logging.DEBUG)
+# # create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+# # create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+# # fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# # add the handlers to the logger
+# # logger.addHandler(fh)
+logger.addHandler(ch)
+
 
 def get_parameters(command):
     request_parameters = {}
@@ -83,7 +102,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         # self.request is the TCP socket connected to the client
-        print("Connection from: " + self.client_address[0])
+        logger.info("Connection from: " + self.client_address[0])
 
         emptyRequest = False
         while emptyRequest == False: # Keep listening for requests from this client until they send us nothing
@@ -91,7 +110,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             dataArray = self.data.decode('UTF-8').split('\r\n')
 
             dataArray[0] = dataArray[0].replace('\x1b%-12345X', '')
-            print('[Receive-Raw] ' + str(dataArray))
+            logger.debug('[Receive-Raw] ' + str(dataArray))
 
             if dataArray[0] == '':  # If we're sent an empty request, close the connection
                 emptyRequest = True
@@ -124,7 +143,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 9100
-
+    
+    socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
         # Activate the server; this will keep running until you
         # interrupt the program with Ctrl-C
