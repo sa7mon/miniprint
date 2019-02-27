@@ -91,6 +91,13 @@ def command_ustatusoff(self, request):
     self.request.sendall(b'')
 
 
+def command_info_id(self, request):
+    logger.info("[Interpret] User wants ID")
+    response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+request[1].encode('UTF-8')
+    logger.info("[Response]  " + str(response))
+    self.request.sendall(response)
+
+
 class MyTCPHandler(socketserver.BaseRequestHandler):
     """
     The request handler class for our server.
@@ -120,10 +127,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 if (dataArray[0] == "@PJL USTATUSOFF"):
                     command_ustatusoff(self, dataArray)
                 elif (dataArray[0] == "@PJL INFO ID"):
-                    logger.info("[Interpret] User wants ID")
-                    response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+dataArray[1].encode('UTF-8')
-                    logger.info("[Response]  " + str(response))
-                    self.request.sendall(response)
+                    command_info_id(self, dataArray)
                 elif (dataArray[0] == "@PJL INFO STATUS"):
                     logger.info("[Interpret] User wants info-status")
                     response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+dataArray[1].encode('UTF-8')
