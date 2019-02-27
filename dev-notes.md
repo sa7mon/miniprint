@@ -19,3 +19,20 @@ Then found the HP docs for PJL - http://h10032.www1.hp.com/ctg/Manual/bpl13208.p
 Started with a super basic socket server that just listens and responds. Then started slowly adding support for commands. I prioritized the ones run by Shodan in these results: https://www.shodan.io/search?query=port:9100+pjl&language=en basically so I can get my honetpot indexed to attract some baddies
 
 Next big step is to get proper logging working, then tackle saving "printed" documents to file
+
+
+## 2/26/19
+
+Couldn't seem to get it to keep listening for connections. Then, I could get it to keep listening for connections, but 
+when the client would send an empty request to exit, an infinite while-loop of print's would happen. I would later figure out
+that this was really 2 different problems
+
+Decided to try to switch back to the socketserver example I had been working with initially, but that didn't have all my later changes
+like logging or real command parsing.
+
+After switching to socketserver (and a night of sleep in which I had an epiphany), I was able to get the server to continually listen 
+for commands and handle a client exiting.
+
+## 2/27/19
+Worked on a unified way of logging that would allow easy parsing later when looking through the logs
+
