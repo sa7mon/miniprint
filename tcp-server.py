@@ -120,26 +120,26 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 if (dataArray[0] == "@PJL USTATUSOFF"):
                     command_ustatusoff(self, dataArray)
                 elif (dataArray[0] == "@PJL INFO ID"):
-                    print("[Interpret] User wants ID")
+                    logger.info("[Interpret] User wants ID")
                     response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+dataArray[1].encode('UTF-8')
-                    print("[Response]  " + str(response))
+                    logger.info("[Response]  " + str(response))
                     self.request.sendall(response)
                 elif (dataArray[0] == "@PJL INFO STATUS"):
-                    print("[Interpret] User wants info-status")
+                    logger.info("[Interpret] User wants info-status")
                     response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+dataArray[1].encode('UTF-8')
-                    print("[Response] " + str(response))
+                    logger.info("[Response] " + str(response))
                     self.request.sendall(response)
                 elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
                     command_fsdirlist(self, dataArray)
                 elif (dataArray[0][0:12] == "@PJL FSQUERY"):
                     command_fsquery(self, dataArray)
                 else:
-                    print("Unknown command: " + str(dataArray))
+                    logger.error("Unknown command: " + str(dataArray))
 
             except Exception as e:
-                print("Caught error: ", str(e))
+                logger.error("Caught error: " + str(e))
 
-        print("Connection closed from: " + self.client_address[0])
+        logger.info("Connection closed from: " + self.client_address[0])
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 9100
