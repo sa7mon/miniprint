@@ -7,24 +7,24 @@ import logging
 import select
 
 filesystem_dir = "/home/ubuntu/workspace/filesystem"
-# log_location = Path("./miniprint.log")
+log_location = Path("./miniprint.log")
 
 conn_timeout = 120 # Seconds to wait for request before closing connection
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
-# # create file handler which logs even debug messages
-# # fh = logging.FileHandler(log_location)
-# # fh.setLevel(logging.DEBUG)
-# # create console handler with a higher log level
+# create file handler which logs even debug messages
+fh = logging.FileHandler(log_location)
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-# # create formatter and add it to the handlers
+# create formatter and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(levelname)5s - %(message)s')
-# # fh.setFormatter(formatter)
+fh.setFormatter(formatter)
 ch.setFormatter(formatter)
-# # add the handlers to the logger
-# # logger.addHandler(fh)
+# add the handlers to the logger
+logger.addHandler(fh)
 logger.addHandler(ch)
 
 
@@ -81,7 +81,9 @@ def command_fsquery(self, request):
             pass
         else:
             return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
-
+        
+    else:
+        return_data = "NAME=" + request_parameters["NAME"] + "\r\nFILEERROR=3\r\n"
     response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
     logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
     self.request.sendall(response)
