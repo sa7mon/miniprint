@@ -98,6 +98,13 @@ def command_info_id(self, request):
     self.request.sendall(response)
 
 
+def command_info_status(self, request):
+    logger.info("[Interpret] User wants info-status")
+    response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+request[1].encode('UTF-8')
+    logger.info("[Response] " + str(response))
+    self.request.sendall(response)
+
+
 class MyTCPHandler(socketserver.BaseRequestHandler):
     """
     The request handler class for our server.
@@ -129,10 +136,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 elif (dataArray[0] == "@PJL INFO ID"):
                     command_info_id(self, dataArray)
                 elif (dataArray[0] == "@PJL INFO STATUS"):
-                    logger.info("[Interpret] User wants info-status")
-                    response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+dataArray[1].encode('UTF-8')
-                    logger.info("[Response] " + str(response))
-                    self.request.sendall(response)
+                    command_info_status(self, dataArray)
                 elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
                     command_fsdirlist(self, dataArray)
                 elif (dataArray[0][0:12] == "@PJL FSQUERY"):

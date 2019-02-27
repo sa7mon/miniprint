@@ -23,7 +23,7 @@ A medium interaction printer honeypot
 | Status Readback   |       INFO FILESYS      |         |
 | Status Readback   |       INFO MEMORY       |         |
 | Status Readback   |      INFO PAGECOUNT     |         |
-| Status Readback   |       INFO STATUS       |         |
+| Status Readback   |       INFO STATUS       |   Yes   |
 | Status Readback   |      INFO VARIABLES     |         |
 | Status Readback   |       INFO USTATUS      |         |
 | Status Readback   |         USTATUS         |         |
