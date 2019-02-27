@@ -9,7 +9,7 @@ import select
 filesystem_dir = "/home/ubuntu/workspace/filesystem"
 # log_location = Path("./miniprint.log")
 
-conn_timeout = 10 # Seconds to wait for request before closing connection
+conn_timeout = 120 # Seconds to wait for request before closing connection
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
@@ -40,14 +40,14 @@ def get_parameters(command):
 def command_fsdirlist(self, request):
     delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request[0])
-    logger.info("[Receive] FSDIRLIST : " + request_parameters["NAME"])
+    # logger.info("fsdirlist - request - directory: " + request_parameters["NAME"])
 
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
-    logger.debug("Requested dir: '" + requested_dir + "'")
+    logger.debug("fsdirlist - request - Requested dir: '" + requested_dir + "'")
     resolved_dir = abspath(filesystem_dir + requested_dir)
-    logger.debug("resolved_dir: " + resolved_dir)
+    logger.debug("fsdirlist - request - resolved_dir: " + resolved_dir)
     if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
-        logger.warn("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_dir))
+        logger.warn("fsdirlist - attack - Path traversal attack attempted! Directory requested: " + str(resolved_dir))
         resolved_dir = filesystem_dir
 
     return_entries = ""
@@ -58,21 +58,21 @@ def command_fsdirlist(self, request):
             return_entries += "\r\n" + entry + " TYPE=DIR"
 
     response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries.encode('UTF-8') + delimiter
-    logger.info("[Response] " + str(return_entries.encode('UTF-8')))
+    logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
     self.request.sendall(response)
     
 
 def command_fsquery(self, request):
     delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request[0])
-    logger.info("[Receive] FSQUERY : " + request_parameters["NAME"])
+    logger.info("fsquery - request - " + request_parameters["NAME"])
 
     requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
-    logger.debug("Requested item: " + requested_item)
+    logger.debug("fsquery - request - requested_item: " + requested_item)
     resolved_item = abspath(filesystem_dir + requested_item)
-    logger.debug("Resolved item: " + resolved_item)
+    logger.debug("fsquery - request - resolved_item: " + resolved_item)
     if resolved_item[0:len(filesystem_dir)] != filesystem_dir:
-        logger.warn("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_item))
+        logger.warn("fsquery - attack - Path traversal attack attempted! Directory requested: " + str(resolved_item))
         resolved_item = filesystem_dir
 
     return_data = ''
@@ -83,7 +83,7 @@ def command_fsquery(self, request):
             return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
 
     response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
-    logger.info("[Response] " + str(return_data.encode('UTF-8')))
+    logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
     self.request.sendall(response)
 
 

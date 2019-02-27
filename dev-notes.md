@@ -36,3 +36,6 @@ for commands and handle a client exiting.
 ## 2/27/19
 Worked on a unified way of logging that would allow easy parsing later when looking through the logs
 
+Since we can only connect to one client at a time, I added a request timeout variable. 
+If the timeout elapses without receiving another request from the client, the 
+connection is closed.
