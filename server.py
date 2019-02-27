@@ -5,8 +5,8 @@ from os.path import isfile, join, abspath, exists
 import logging
 from pathlib import Path
 
-filesystem_dir = "/mnt/hgfs/faux-printer/filesystem"
-log_location = Path("/home/dan/miniprint.log")
+filesystem_dir = "/Volumes/DATA/Projects/miniprint/filesystem"
+log_location = Path("./miniprint.log")
 
 def get_parameters(command):
     request_parameters = {}
@@ -93,7 +93,7 @@ def main():
     host = "localhost"
     port = 9100
 
-    mySocket = socket.socket()
+    mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     mySocket.bind((host,port))
 
     mySocket.listen(1)
@@ -101,7 +101,7 @@ def main():
     logger.info("Connection from:" + str(addr))
 
     while True:
-        data = conn.recv(1024).strip()
+        data = conn.recv(4096).strip()
         dataArray = data.decode('UTF-8').split('\r\n')
         dataArray[0] = dataArray[0].replace('\x1b%-12345X', '')
         logger.debug('[Receive-Raw] ' + str(dataArray))
