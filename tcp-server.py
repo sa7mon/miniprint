@@ -18,7 +18,7 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 # # create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(levelname)5s - %(message)s')
 # # fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 # # add the handlers to the logger
@@ -38,14 +38,14 @@ def get_parameters(command):
 def command_fsdirlist(self, request):
     delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request[0])
-    print("[Receive] FSDIRLIST : " + request_parameters["NAME"])
+    logger.info("[Receive] FSDIRLIST : " + request_parameters["NAME"])
 
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
-    print("Requested dir: '" + requested_dir + "'")
+    logger.debug("Requested dir: '" + requested_dir + "'")
     resolved_dir = abspath(filesystem_dir + requested_dir)
-    print("resolved_dir: " + resolved_dir)
+    logger.debug("resolved_dir: " + resolved_dir)
     if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
-        print("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_dir))
+        logger.warn("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_dir))
         resolved_dir = filesystem_dir
 
     return_entries = ""
@@ -56,21 +56,21 @@ def command_fsdirlist(self, request):
             return_entries += "\r\n" + entry + " TYPE=DIR"
 
     response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries.encode('UTF-8') + delimiter
-    print("[Response] " + str(return_entries.encode('UTF-8')))
+    logger.info("[Response] " + str(return_entries.encode('UTF-8')))
     self.request.sendall(response)
     
 
 def command_fsquery(self, request):
     delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request[0])
-    print("[Receive] FSQUERY : " + request_parameters["NAME"])
+    logger.info("[Receive] FSQUERY : " + request_parameters["NAME"])
 
     requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
-    print("Requested item: " + requested_item)
+    logger.debug("Requested item: " + requested_item)
     resolved_item = abspath(filesystem_dir + requested_item)
-    print("Resolved item: " + resolved_item)
+    logger.debug("Resolved item: " + resolved_item)
     if resolved_item[0:len(filesystem_dir)] != filesystem_dir:
-        print("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_item))
+        logger.warn("[Attack] Path traversal attack attempted! Directory requested: " + str(resolved_item))
         resolved_item = filesystem_dir
 
     return_data = ''
@@ -81,13 +81,13 @@ def command_fsquery(self, request):
             return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
 
     response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
-    print("[Response] " + str(return_data.encode('UTF-8')))
+    logger.info("[Response] " + str(return_data.encode('UTF-8')))
     self.request.sendall(response)
 
 
 def command_ustatusoff(self, request):
-    print("[Interpret] User wants status request. Sending empty ACK")
-    print("[Response] (empty ACK)")
+    logger.info("[Interpret] User wants status request. Sending empty ACK")
+    logger.info("[Response] (empty ACK)")
     self.request.sendall(b'')
 
 
