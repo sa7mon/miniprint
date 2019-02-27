@@ -52,10 +52,11 @@ def command_fsdirlist(self, request):
 
     return_entries = ""
     for entry in os.listdir(resolved_dir):
-        if isfile(join(resolved_dir, entry)):
-            return_entries += "\r\n" + entry + " TYPE=FILE SIZE=0"  # TODO do size check
-        else:
-            return_entries += "\r\n" + entry + " TYPE=DIR"
+        if entry != '.gitignore':
+            if isfile(join(resolved_dir, entry)):
+                return_entries += "\r\n" + entry + " TYPE=FILE SIZE=0"  # TODO do size check
+            else:
+                return_entries += "\r\n" + entry + " TYPE=DIR"
 
     response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries.encode('UTF-8') + delimiter
     logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
