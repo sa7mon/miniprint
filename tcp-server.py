@@ -116,7 +116,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         # self.request is the TCP socket connected to the client
-        logger.info("Connection from: " + self.client_address[0])
+        logger.info("handle - open_conn - " + self.client_address[0])
 
         emptyRequest = False
         while emptyRequest == False: # Keep listening for requests from this client until they send us nothing
@@ -124,7 +124,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             dataArray = self.data.decode('UTF-8').split('\r\n')
 
             dataArray[0] = dataArray[0].replace('\x1b%-12345X', '')
-            logger.debug('[Receive-Raw] ' + str(dataArray))
+            logger.debug('handle - request - ' + str(dataArray))
 
             if dataArray[0] == '':  # If we're sent an empty request, close the connection
                 emptyRequest = True
@@ -142,12 +142,12 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 elif (dataArray[0][0:12] == "@PJL FSQUERY"):
                     command_fsquery(self, dataArray)
                 else:
-                    logger.error("Unknown command: " + str(dataArray))
+                    logger.error("handle - cmd_unknown - " + str(dataArray))
 
             except Exception as e:
-                logger.error("Caught error: " + str(e))
+                logger.error("handle - error_caught - " + str(e))
 
-        logger.info("Connection closed from: " + self.client_address[0])
+        logger.info("handle - close_conn - " + self.client_address[0])
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 9100
