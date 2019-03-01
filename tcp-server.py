@@ -6,7 +6,7 @@ from pathlib import Path
 import logging
 import select
 
-filesystem_dir = "/home/ubuntu/workspace/filesystem"
+filesystem_dir = "/Volumes/DATA/Projects/miniprint/filesystem"
 log_location = Path("./miniprint.log")
 
 conn_timeout = 120 # Seconds to wait for request before closing connection
