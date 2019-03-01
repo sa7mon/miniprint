@@ -8,7 +8,7 @@ import select
 from pyfakefs import fake_filesystem
 
 
-filesystem_dir = "./filesystem"
+# filesystem_dir = "./filesystem"
 log_location = Path("./miniprint.log")
 
 conn_timeout = 120 # Seconds to wait for request before closing connection
@@ -61,18 +61,19 @@ def command_fsdirlist(self, request, printer):
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
 
     logger.debug("fsdirlist - request - Requested dir: '" + requested_dir + "'")
-    resolved_dir = abspath(filesystem_dir + requested_dir)
-    # logger.debug("fsdirlist - request - resolved_dir: " + resolved_dir)
     return_entries = ""
 
     if printer.fos.path.exists(requested_dir):
+        return_entries = ' ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR'
         for entry in printer.fos.scandir(requested_dir):
             if entry.is_file():
                 return_entries += "\r\n" + entry.name + " TYPE=FILE SIZE=0" #TODO check size
             elif entry.is_dir():
                 return_entries += "\r\n" + entry.name + " TYPE=DIR"
+    else:
+        return_entries = "FILEERROR = 3" # "file not found"
 
-    response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries + delimiter).encode("UTF_8")
+    response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '"' + return_entries + delimiter).encode("UTF_8")
     logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
     self.request.sendall(response)
     
@@ -85,7 +86,7 @@ def command_fsquery(self, request, printer):
     requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
     logger.debug("fsquery - request - requested_item: " + requested_item)
     return_data = ''
-    
+
     if (printer.fos.path.exists(requested_item)):
         a = printer.fs.get_object(requested_item)
         if type(a) == fake_filesystem.FakeFile:
@@ -93,11 +94,24 @@ def command_fsquery(self, request, printer):
         elif type(a) == fake_filesystem.FakeDirectory:
             return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
     else:
-        logger.debug("fsquery - handle - Path doesn't exist") # TODO: Return no such file/dir
+        return_data = "NAME=" + request_parameters["NAME"] + " FILEERROR=3\r\n" # File not found
 
     response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
     logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
     self.request.sendall(response)
+
+
+def command_fsmkdir(self, request, printer):
+    delimiter = request[1].encode('UTF-8')
+    request_parameters = get_parameters(request[0])
+    requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
+    logger.info("fsmkdir - request - " + requested_dir)
+
+    printer.fos.create_dir(requested_dir)
+
+    # response=b'@PJL FSMKDIR ' + return_data.encode('UTF-8') + delimiter
+    # logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
+    # self.request.sendall(response)
 
 
 def command_ustatusoff(self, request):
@@ -176,6 +190,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     command_fsdirlist(self, dataArray, printer=printer)
                 elif (dataArray[0][0:12] == "@PJL FSQUERY"):
                     command_fsquery(self, dataArray, printer=printer)
+                elif (dataArray[0][0:12] == "@PJL FSMKDIR"):
+                    command_fsmkdir(self, dataArray, printer=printer)
                 else:
                     logger.error("handle - cmd_unknown - " + str(dataArray))
 
