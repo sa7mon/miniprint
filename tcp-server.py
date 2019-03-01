@@ -5,8 +5,10 @@ from os.path import isfile, join, abspath, exists
 from pathlib import Path
 import logging
 import select
+from pyfakefs import fake_filesystem
 
-filesystem_dir = "/home/ubuntu/workspace/filesystem"
+
+filesystem_dir = "./filesystem"
 log_location = Path("./miniprint.log")
 
 conn_timeout = 120 # Seconds to wait for request before closing connection
@@ -28,6 +30,22 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 
+def create_fake_filesystem(fs):
+    fs.create_dir("/PJL")
+    fs.create_dir("/PostScript")
+    fs.create_dir("/saveDevice/SavedJobs/InProgress")
+    fs.create_dir("/saveDevice/SavedJobs/KeepJob")
+    fs.create_dir("/webServer/default")
+    fs.create_dir("/webServer/home")
+    fs.create_dir("/webServer/lib")
+    fs.create_dir("/webServer/objects")
+    fs.create_dir("/webServer/permanent")
+    fs.create_file("/webServer/default/csconfig")
+    fs.create_file("/webServer/home/device.html")
+    fs.create_file("/webServer/home/hostmanifest")
+    fs.create_file("/webServer/lib/keys")
+    fs.create_file("/webServer/lib/security")
+
 def get_parameters(command):
     request_parameters = {}
     for item in command.split(" "):
@@ -37,28 +55,29 @@ def get_parameters(command):
     return request_parameters
 
 
-def command_fsdirlist(self, request):
-    delimiter = request[1].encode('UTF-8')
+def command_fsdirlist(self, request, printer):
+    delimiter = request[1]
     request_parameters = get_parameters(request[0])
-    # logger.info("fsdirlist - request - directory: " + request_parameters["NAME"])
-
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
+
     logger.debug("fsdirlist - request - Requested dir: '" + requested_dir + "'")
     resolved_dir = abspath(filesystem_dir + requested_dir)
-    logger.debug("fsdirlist - request - resolved_dir: " + resolved_dir)
-    if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
-        logger.warn("fsdirlist - attack - Path traversal attack attempted! Directory requested: " + str(resolved_dir))
-        resolved_dir = filesystem_dir
-
+    # logger.debug("fsdirlist - request - resolved_dir: " + resolved_dir)
+    
+    # if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
+    #     logger.warn("fsdirlist - attack - Path traversal attack attempted! Directory requested: " + str(resolved_dir))
+    #     resolved_dir = filesystem_dir
+    
     return_entries = ""
-    for entry in os.listdir(resolved_dir):
-        if entry != '.gitignore':
-            if isfile(join(resolved_dir, entry)):
-                return_entries += "\r\n" + entry + " TYPE=FILE SIZE=0"  # TODO do size check
-            else:
-                return_entries += "\r\n" + entry + " TYPE=DIR"
 
-    response=b'@PJL FSDIRLIST NAME="0:/" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries.encode('UTF-8') + delimiter
+    if printer.fos.path.exists(requested_dir):
+        for entry in printer.fos.scandir(requested_dir):
+            if entry.is_file():
+                return_entries += "\r\n" + entry.name + " TYPE=FILE SIZE=0" #TODO check size
+            elif entry.is_dir():
+                return_entries += "\r\n" + entry.name + " TYPE=DIR"
+
+    response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '" ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR' + return_entries + delimiter).encode("UTF_8")
     logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
     self.request.sendall(response)
     
@@ -117,6 +136,9 @@ class Printer:
         self.code = code
         self.ready_msg = ready_msg
         self.online = online
+        self.fs = fake_filesystem.FakeFilesystem()
+        self.fos = fake_filesystem.FakeOsModule(self.fs)
+        create_fake_filesystem(self.fs)
         
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
@@ -132,7 +154,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         # self.request is the TCP socket connected to the client
         logger.info("handle - open_conn - " + self.client_address[0])
         printer = Printer()
-
+        
         emptyRequest = False
         while emptyRequest == False:
             
@@ -160,7 +182,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 elif (dataArray[0] == "@PJL INFO STATUS"):
                     command_info_status(self, dataArray, printer=printer)
                 elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
-                    command_fsdirlist(self, dataArray)
+                    command_fsdirlist(self, dataArray, printer=printer)
                 elif (dataArray[0][0:12] == "@PJL FSQUERY"):
                     command_fsquery(self, dataArray)
                 else:
