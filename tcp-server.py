@@ -58,7 +58,6 @@ def get_parameters(command):
 
 
 def command_fsdirlist(self, request, printer):
-    delimiter = request[1]
     request_parameters = get_parameters(request)
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
 
@@ -77,12 +76,10 @@ def command_fsdirlist(self, request, printer):
 
     response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '"' + return_entries).encode("UTF_8")
     logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
-    # self.request.sendall(response)
     return return_entries
     
 
 def command_fsquery(self, request, printer):
-    # delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request)
     logger.info("fsquery - request - " + request_parameters["NAME"])
 
@@ -105,7 +102,6 @@ def command_fsquery(self, request, printer):
 
 
 def command_fsmkdir(self, request, printer):
-    # delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request)
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
     logger.info("fsmkdir - request - " + requested_dir)
@@ -120,10 +116,8 @@ def command_fsmkdir(self, request, printer):
     else:
         printer.fs.create_dir(requested_dir)
 
-    response=''
     logger.info("fsquery - response - Sending empty response")
-    # self.request.sendall(response)
-    return response
+    return ''
 
 
 def command_ustatusoff(self, request):
@@ -191,7 +185,13 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             if not ready[0]:
                 break
             
-            self.data = self.request.recv(1024).strip()
+            try:
+                self.data = self.request.recv(1024).strip()
+            except Exception as e:
+                logger.error("handle - receive - Error receiving data - possible port scan")
+                emptyRequest = True
+                break
+
             request = self.data.decode('UTF-8')
             request = request.replace('\x1b%-12345X', '')
             commands = request.split('@PJL')
