@@ -6,6 +6,8 @@ from pathlib import Path
 import logging
 import select
 from pyfakefs import fake_filesystem
+import sys
+import traceback
 
 
 log_location = Path("./miniprint.log")
@@ -44,6 +46,7 @@ def create_fake_filesystem(fs):
     fs.create_file("/webServer/home/hostmanifest")
     fs.create_file("/webServer/lib/keys")
     fs.create_file("/webServer/lib/security")
+
 
 def get_parameters(command):
     request_parameters = {}
@@ -106,24 +109,34 @@ def command_fsmkdir(self, request, printer):
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
     logger.info("fsmkdir - request - " + requested_dir)
 
-    printer.fos.create_dir(requested_dir)
+    """
+    Check if dir exists
+        If it does, do nothing and return empty ACK
+        If it doesn't, create dir and return empty ACK
+    """
+    if printer.fos.path.exists(requested_dir):
+        pass
+    else:
+        printer.fs.create_dir(requested_dir)
 
-    # response=b'@PJL FSMKDIR ' + return_data.encode('UTF-8') + delimiter
-    # logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
-    # self.request.sendall(response)
+    response=b''
+    logger.info("fsquery - response - Sending empty response")
+    self.request.sendall(response)
 
 
 def command_ustatusoff(self, request):
     logger.info("ustatusoff - request - Request received")
     logger.info("ustatusoff - response - Sending empty reply")
-    self.request.sendall(b'')
+    # self.request.sendall(b'')
+    return ''
 
 
 def command_info_id(self, request, printer):
     logger.info("info_id - request - ID requested")
-    response = ('@PJL INFO ID\r\n' + printer.id + '\r\n\x1b' + request[1]).encode('UTF-8')
+    response = '@PJL INFO ID\r\n' + printer.id + '\r\n\x1b' + request[1]
     logger.info("info_id - response - " + str(response))
-    self.request.sendall(response)
+    # self.request.sendall(response)
+    return response
 
 
 def command_info_status(self, request, printer):
@@ -131,6 +144,17 @@ def command_info_status(self, request, printer):
     response = ('@PJL INFO STATUS\r\nCODE=' + str(printer.code) + '\r\nDISPLAY=' + printer.ready_msg + '\r\nONLINE=' + str(printer.online) + request[1]).encode('UTF-8')
     logger.info("info_status - response - " + str(response))
     self.request.sendall(response)
+
+
+def command_echo(self, request):
+    logger.info("echo - request - Received request for delimiter")
+    response = ''
+    response = "@PJL " + request
+    response += '\x1b'
+    logger.info("echo - response - Responding with: " + str(response.encode('UTF-8')))
+    # self.request.sendall(response.encode('UTF-8')) 
+    return response
+
 
 
 class Printer:
@@ -169,30 +193,42 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 break
             
             self.data = self.request.recv(1024).strip()
-            dataArray = self.data.decode('UTF-8').split('\r\n')
+            request = self.data.decode('UTF-8')
+            request = request.replace('\x1b%-12345X', '')
+            commands = request.split('@PJL')
+            commands = [a for a in commands if a] # Filter out empty list items since split() returns an empty string
 
-            dataArray[0] = dataArray[0].replace('\x1b%-12345X', '')
-            logger.debug('handle - request - ' + str(dataArray))
+            logger.debug('handle - request - ' + str(request))
 
-            if dataArray[0] == '':  # If we're sent an empty request, close the connection
+            if len(commands) == 0:  # If we're sent an empty request, close the connection
                 emptyRequest = True
                 break
 
             try:
-                if (dataArray[0] == "@PJL USTATUSOFF"):
-                    command_ustatusoff(self, dataArray)
-                elif (dataArray[0] == "@PJL INFO ID"):
-                    command_info_id(self, dataArray, printer=printer)
-                elif (dataArray[0] == "@PJL INFO STATUS"):
-                    command_info_status(self, dataArray, printer=printer)
-                elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
-                    command_fsdirlist(self, dataArray, printer=printer)
-                elif (dataArray[0][0:12] == "@PJL FSQUERY"):
-                    command_fsquery(self, dataArray, printer=printer)
-                elif (dataArray[0][0:12] == "@PJL FSMKDIR"):
-                    command_fsmkdir(self, dataArray, printer=printer)
-                else:
-                    logger.error("handle - cmd_unknown - " + str(dataArray))
+                response = ''
+
+                for command in commands:
+                    command = command.strip()
+
+                    if command[0:4] == "ECHO":
+                        response += command_echo(self, command)
+                    elif command == "USTATUSOFF":
+                        response += command_ustatusoff(self, command)
+                    elif command == "INFO ID":
+                        response += command_info_id(self, command, printer=printer)
+                    elif command == "INFO STATUS":
+                        response += command_info_status(self, command, printer=printer)
+                    elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
+                        command_fsdirlist(self, dataArray, printer=printer)
+                    elif (dataArray[0][0:12] == "@PJL FSQUERY"):
+                        command_fsquery(self, dataArray, printer=printer)
+                    elif (dataArray[0][0:12] == "@PJL FSMKDIR"):
+                        command_fsmkdir(self, dataArray, printer=printer)
+                    else:
+                        logger.error("handle - cmd_unknown - " + str(dataArray))
+
+                logger.info("handle - response - " + response)
+                self.request.sendall(response.encode('UTF-8')) 
 
             except Exception as e:
                 logger.error("handle - error_caught - " + str(e))
