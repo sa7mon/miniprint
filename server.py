@@ -94,39 +94,49 @@ def main():
     port = 9100
 
     mySocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    mySocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # To fix "address already in use"
     mySocket.bind((host,port))
 
     mySocket.listen(1)
-    conn, addr = mySocket.accept()
-    logger.info("Connection from:" + str(addr))
-
+    
     while True:
+        conn, addr = mySocket.accept()
+        logger.info("Connection from:" + str(addr))
+
         data = conn.recv(4096).strip()
         dataArray = data.decode('UTF-8').split('\r\n')
         dataArray[0] = dataArray[0].replace('\x1b%-12345X', '')
         logger.debug('[Receive-Raw] ' + str(dataArray))
 
-        if (dataArray[0] == "@PJL USTATUSOFF"):
-            command_ustatusoff(conn, logger, dataArray)
-        elif (dataArray[0] == "@PJL INFO ID"):
-            logger.info("[Interpret] User wants ID")
-            response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+dataArray[1].encode('UTF-8')
-            logger.info("[Response]  " + str(response))
-            conn.send(response)
-        elif (dataArray[0] == "@PJL INFO STATUS"):
-            logger.info("[Interpret] User wants info-status")
-            response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+dataArray[1].encode('UTF-8')
-            logger.info("[Response] " + str(response))
-            conn.send(response)
-        elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
-            command_fsdirlist(conn, logger, dataArray)
-        elif (dataArray[0][0:12] == "@PJL FSQUERY"):
-            command_fsquery(conn, logger, dataArray)
-        else:
-            logger.info("Unknown command:")
-            logger.info(dataArray)
-            conn.close()
-            break
+        try:
+            if (dataArray[0] == "@PJL USTATUSOFF"):
+                command_ustatusoff(conn, logger, dataArray)
+            elif (dataArray[0] == "@PJL INFO ID"):
+                logger.info("[Interpret] User wants ID")
+                response = b'@PJL INFO ID\r\n"hp LaserJet 4200"\r\n\x1b'+dataArray[1].encode('UTF-8')
+                logger.info("[Response]  " + str(response))
+                conn.send(response)
+            elif (dataArray[0] == "@PJL INFO STATUS"):
+                logger.info("[Interpret] User wants info-status")
+                response = b'@PJL INFO STATUS\r\nCODE=10001\r\nDISPLAY="Ready"\r\nONLINE=TRUE'+dataArray[1].encode('UTF-8')
+                logger.info("[Response] " + str(response))
+                conn.send(response)
+            elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
+                command_fsdirlist(conn, logger, dataArray)
+            elif (dataArray[0][0:12] == "@PJL FSQUERY"):
+                command_fsquery(conn, logger, dataArray)
+            # elif (dataArray[0] == ''):
+                # conn.close()
+            else:
+                logger.info("Unknown command: " + str(dataArray))
+                # logger.info(dataArray)
+                # conn.send(b'')
+                conn.close()
+                # break
+        except Exception as e:
+            logger.error("Caught error: ", str(e))
+        # finally:
+            # logger.error("Caught error")
 
     conn.close()
     print("Connection with " + str(addr) + " closed")
