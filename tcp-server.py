@@ -63,11 +63,6 @@ def command_fsdirlist(self, request, printer):
     logger.debug("fsdirlist - request - Requested dir: '" + requested_dir + "'")
     resolved_dir = abspath(filesystem_dir + requested_dir)
     # logger.debug("fsdirlist - request - resolved_dir: " + resolved_dir)
-    
-    # if resolved_dir[0:len(filesystem_dir)] != filesystem_dir:
-    #     logger.warn("fsdirlist - attack - Path traversal attack attempted! Directory requested: " + str(resolved_dir))
-    #     resolved_dir = filesystem_dir
-    
     return_entries = ""
 
     if printer.fos.path.exists(requested_dir):
@@ -82,28 +77,24 @@ def command_fsdirlist(self, request, printer):
     self.request.sendall(response)
     
 
-def command_fsquery(self, request):
+def command_fsquery(self, request, printer):
     delimiter = request[1].encode('UTF-8')
     request_parameters = get_parameters(request[0])
     logger.info("fsquery - request - " + request_parameters["NAME"])
 
     requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
     logger.debug("fsquery - request - requested_item: " + requested_item)
-    resolved_item = abspath(filesystem_dir + requested_item)
-    logger.debug("fsquery - request - resolved_item: " + resolved_item)
-    if resolved_item[0:len(filesystem_dir)] != filesystem_dir:
-        logger.warn("fsquery - attack - Path traversal attack attempted! Directory requested: " + str(resolved_item))
-        resolved_item = filesystem_dir
-
     return_data = ''
-    if exists(resolved_item):
-        if isfile(resolved_item): # TODO: Get files to work and return "no" when item doesn't exist
-            pass
-        else:
+    
+    if (printer.fos.path.exists(requested_item)):
+        a = printer.fs.get_object(requested_item)
+        if type(a) == fake_filesystem.FakeFile:
+            return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=0" # TODO Get actual file size
+        elif type(a) == fake_filesystem.FakeDirectory:
             return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
-        
     else:
-        return_data = "NAME=" + request_parameters["NAME"] + "\r\nFILEERROR=3\r\n"
+        logger.debug("fsquery - handle - Path doesn't exist") # TODO: Return no such file/dir
+
     response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
     logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
     self.request.sendall(response)
@@ -184,7 +175,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
                     command_fsdirlist(self, dataArray, printer=printer)
                 elif (dataArray[0][0:12] == "@PJL FSQUERY"):
-                    command_fsquery(self, dataArray)
+                    command_fsquery(self, dataArray, printer=printer)
                 else:
                     logger.error("handle - cmd_unknown - " + str(dataArray))
 
