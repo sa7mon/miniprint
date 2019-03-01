@@ -8,7 +8,6 @@ import select
 from pyfakefs import fake_filesystem
 
 
-#filesystem_dir = "./filesystem"
 log_location = Path("./miniprint.log")
 
 conn_timeout = 120 # Seconds to wait for request before closing connection
