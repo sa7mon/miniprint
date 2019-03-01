@@ -59,7 +59,7 @@ def get_parameters(command):
 
 def command_fsdirlist(self, request, printer):
     delimiter = request[1]
-    request_parameters = get_parameters(request[0])
+    request_parameters = get_parameters(request)
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
 
     logger.debug("fsdirlist - request - Requested dir: '" + requested_dir + "'")
@@ -75,14 +75,15 @@ def command_fsdirlist(self, request, printer):
     else:
         return_entries = "FILEERROR = 3" # "file not found"
 
-    response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '"' + return_entries + delimiter).encode("UTF_8")
+    response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '"' + return_entries).encode("UTF_8")
     logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
-    self.request.sendall(response)
+    # self.request.sendall(response)
+    return return_entries
     
 
 def command_fsquery(self, request, printer):
-    delimiter = request[1].encode('UTF-8')
-    request_parameters = get_parameters(request[0])
+    # delimiter = request[1].encode('UTF-8')
+    request_parameters = get_parameters(request)
     logger.info("fsquery - request - " + request_parameters["NAME"])
 
     requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
@@ -98,14 +99,14 @@ def command_fsquery(self, request, printer):
     else:
         return_data = "NAME=" + request_parameters["NAME"] + " FILEERROR=3\r\n" # File not found
 
-    response=b'@PJL FSQUERY ' + return_data.encode('UTF-8') + delimiter
+    response='@PJL FSQUERY ' + return_data
     logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
-    self.request.sendall(response)
+    return response
 
 
 def command_fsmkdir(self, request, printer):
-    delimiter = request[1].encode('UTF-8')
-    request_parameters = get_parameters(request[0])
+    # delimiter = request[1].encode('UTF-8')
+    request_parameters = get_parameters(request)
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
     logger.info("fsmkdir - request - " + requested_dir)
 
@@ -119,9 +120,10 @@ def command_fsmkdir(self, request, printer):
     else:
         printer.fs.create_dir(requested_dir)
 
-    response=b''
+    response=''
     logger.info("fsquery - response - Sending empty response")
-    self.request.sendall(response)
+    # self.request.sendall(response)
+    return response
 
 
 def command_ustatusoff(self, request):
@@ -215,19 +217,21 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         response += command_info_id(self, command, printer=printer)
                     elif command == "INFO STATUS":
                         response += command_info_status(self, command, printer=printer)
-                    elif (dataArray[0][0:14] == "@PJL FSDIRLIST"):
-                        command_fsdirlist(self, dataArray, printer=printer)
-                    elif (dataArray[0][0:12] == "@PJL FSQUERY"):
-                        command_fsquery(self, dataArray, printer=printer)
-                    elif (dataArray[0][0:12] == "@PJL FSMKDIR"):
-                        command_fsmkdir(self, dataArray, printer=printer)
+                    elif command[0:9] == "FSDIRLIST":
+                        response += command_fsdirlist(self, command, printer=printer)
+                    elif command[0:7] == "FSQUERY":
+                        response += command_fsquery(self, command, printer=printer)
+                    elif command[0:7] == "FSMKDIR":
+                        response += command_fsmkdir(self, command, printer=printer)
                     else:
-                        logger.error("handle - cmd_unknown - " + str(dataArray))
+                        logger.error("handle - cmd_unknown - " + str(command))
 
                 logger.info("handle - response - " + response)
                 self.request.sendall(response.encode('UTF-8')) 
 
             except Exception as e:
+                tb = sys.exc_info()[2]
+                traceback.print_tb(tb)
                 logger.error("handle - error_caught - " + str(e))
 
         logger.info("handle - close_conn - " + self.client_address[0])
