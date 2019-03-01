@@ -127,23 +127,21 @@ def command_fsmkdir(self, request, printer):
 def command_ustatusoff(self, request):
     logger.info("ustatusoff - request - Request received")
     logger.info("ustatusoff - response - Sending empty reply")
-    # self.request.sendall(b'')
     return ''
 
 
 def command_info_id(self, request, printer):
     logger.info("info_id - request - ID requested")
-    response = '@PJL INFO ID\r\n' + printer.id + '\r\n\x1b' + request[1]
+    response = '@PJL INFO ID\r\n' + printer.id + '\r\n\x1b'
     logger.info("info_id - response - " + str(response))
-    # self.request.sendall(response)
     return response
 
 
 def command_info_status(self, request, printer):
     logger.info("info_status - request - Client requests status")
-    response = ('@PJL INFO STATUS\r\nCODE=' + str(printer.code) + '\r\nDISPLAY=' + printer.ready_msg + '\r\nONLINE=' + str(printer.online) + request[1]).encode('UTF-8')
-    logger.info("info_status - response - " + str(response))
-    self.request.sendall(response)
+    response = '@PJL INFO STATUS\r\nCODE=' + str(printer.code) + '\r\nDISPLAY=' + printer.ready_msg + '\r\nONLINE=' + str(printer.online)
+    logger.info("info_status - response - " + str(response.encode('UTF-8')))
+    return response 
 
 
 def command_echo(self, request):
@@ -152,7 +150,6 @@ def command_echo(self, request):
     response = "@PJL " + request
     response += '\x1b'
     logger.info("echo - response - Responding with: " + str(response.encode('UTF-8')))
-    # self.request.sendall(response.encode('UTF-8')) 
     return response
 
 
