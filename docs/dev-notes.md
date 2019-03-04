@@ -34,8 +34,22 @@ After switching to socketserver (and a night of sleep in which I had an epiphany
 for commands and handle a client exiting.
 
 ## 2/27/19
+
 Worked on a unified way of logging that would allow easy parsing later when looking through the logs
 
 Since we can only connect to one client at a time, I added a request timeout variable. 
 If the timeout elapses without receiving another request from the client, the 
 connection is closed.
+
+
+(Missing a bunch of updates here)
+
+
+## 3/3/19
+
+* Came across an [nmap script](https://nmap.org/nsedoc/scripts/pjl-ready-message.html) that checks a target RDYMSG. I ran it but got like "unknown" response. Turns out I forgot to surround the DISPLAY message with double-quotes. Now it works with the script.
+
+
+
+
+
