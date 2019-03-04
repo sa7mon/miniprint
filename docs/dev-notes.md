@@ -43,10 +43,13 @@ for commands and handle a client exiting.
 
 ## 3/1/19
 
-
-
-(Missing a bunch of updates here)
-
+* After playing around with `pyfakefs` for a while with a temp file, I started implementing the fakefs in `tcp-server.py` in a separate branch. 
+* Got the main functionality all working again and merged it into master
+* After that, I deployed the honeypot to a VPS on DigitalOcean to try to attract some baddies. It didn't get any hits, so I created a script to kick of a manual scan by Shodan. 
+* The Shodan scan revealed some issues with my script. Namely: handling multiple PJL commands in a single request.
+* I spent a lot of time getting that working and fixing the stuff I broke while implementing it
+* The results are that the script is now WAY more stable than it was - running PRET multiple times in a row doesn't result in the same command time-outs like before
+* I then tested it was nmap and found another issue. The whole thing quits if an unexpected request is received. I added handling for this to survive port scans.
 
 ## 3/3/19
 
