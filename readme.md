@@ -48,3 +48,5 @@ Logs are in format: `time - loglevel - method - operation - message`
 | File System       |         FSQUERY         |   Yes   |
 | File System       |         FSUPLOAD        |         |
 
+## Thanks
+* to frbexiga at BinaryEdge
