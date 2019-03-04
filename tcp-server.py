@@ -57,7 +57,7 @@ def get_parameters(command):
     return request_parameters
 
 
-def command_fsdirlist(self, request, printer):
+def command_fsdirlist(request, printer):
     request_parameters = get_parameters(request)
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
 
@@ -79,7 +79,7 @@ def command_fsdirlist(self, request, printer):
     return return_entries
     
 
-def command_fsquery(self, request, printer):
+def command_fsquery(request, printer):
     request_parameters = get_parameters(request)
     logger.info("fsquery - request - " + request_parameters["NAME"])
 
@@ -101,7 +101,7 @@ def command_fsquery(self, request, printer):
     return response
 
 
-def command_fsmkdir(self, request, printer):
+def command_fsmkdir(request, printer):
     request_parameters = get_parameters(request)
     requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
     logger.info("fsmkdir - request - " + requested_dir)
@@ -120,27 +120,37 @@ def command_fsmkdir(self, request, printer):
     return ''
 
 
-def command_ustatusoff(self, request):
+def command_rdymsg(request, printer):
+    request_parameters = get_parameters(request)
+    rdymsg = request_parameters["DISPLAY"]
+    logger.info("rdymsg - request - Ready message: " + rdymsg)
+
+    printer.ready_msg = rdymsg
+    logger.info("rdymsg - response - Sending back empty ACK")
+    return ''
+
+
+def command_ustatusoff(request):
     logger.info("ustatusoff - request - Request received")
     logger.info("ustatusoff - response - Sending empty reply")
     return ''
 
 
-def command_info_id(self, request, printer):
+def command_info_id(request, printer):
     logger.info("info_id - request - ID requested")
     response = '@PJL INFO ID\r\n' + printer.id + '\r\n\x1b'
     logger.info("info_id - response - " + str(response))
     return response
 
 
-def command_info_status(self, request, printer):
+def command_info_status(request, printer):
     logger.info("info_status - request - Client requests status")
-    response = '@PJL INFO STATUS\r\nCODE=' + str(printer.code) + '\r\nDISPLAY=' + printer.ready_msg + '\r\nONLINE=' + str(printer.online)
+    response = '@PJL INFO STATUS\r\nCODE=' + str(printer.code) + '\r\nDISPLAY="' + printer.ready_msg + '"\r\nONLINE=' + str(printer.online)
     logger.info("info_status - response - " + str(response.encode('UTF-8')))
     return response 
 
 
-def command_echo(self, request):
+def command_echo(request):
     logger.info("echo - request - Received request for delimiter")
     response = ''
     response = "@PJL " + request
@@ -210,19 +220,21 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     command = command.strip()
 
                     if command[0:4] == "ECHO":
-                        response += command_echo(self, command)
+                        response += command_echo(command)
                     elif command == "USTATUSOFF":
-                        response += command_ustatusoff(self, command)
+                        response += command_ustatusoff(command)
                     elif command == "INFO ID":
-                        response += command_info_id(self, command, printer=printer)
+                        response += command_info_id(command, printer)
                     elif command == "INFO STATUS":
-                        response += command_info_status(self, command, printer=printer)
+                        response += command_info_status(command, printer)
                     elif command[0:9] == "FSDIRLIST":
-                        response += command_fsdirlist(self, command, printer=printer)
+                        response += command_fsdirlist(command, printer)
                     elif command[0:7] == "FSQUERY":
-                        response += command_fsquery(self, command, printer=printer)
+                        response += command_fsquery(command, printer)
                     elif command[0:7] == "FSMKDIR":
-                        response += command_fsmkdir(self, command, printer=printer)
+                        response += command_fsmkdir(command, printer)
+                    elif command[0:6] == "RDYMSG":
+                        response += command_rdymsg(command, printer)
                     else:
                         logger.error("handle - cmd_unknown - " + str(command))
 
