@@ -35,11 +35,14 @@ for commands and handle a client exiting.
 
 ## 2/27/19
 
-Worked on a unified way of logging that would allow easy parsing later when looking through the logs
+* Worked on a unified way of logging that would allow easy parsing later when looking through the logs
+* Since we can only connect to one client at a time, I added a request timeout variable. If the timeout elapses without receiving another request from the client, the connection is closed.
+* Command handling was mostly done in the handle() method which isn't ideal, so I moved each `command_*` code to it's own method
+* I wanted to take an OOP approach, so I started implementing a `Printer` class so that we can track printer variables as they are changed by the client or a different printer config is loaded by the user (future feature)
+* Got the "fake" (real) filesystem working with `cd` and `ls` 
 
-Since we can only connect to one client at a time, I added a request timeout variable. 
-If the timeout elapses without receiving another request from the client, the 
-connection is closed.
+## 3/1/19
+
 
 
 (Missing a bunch of updates here)
