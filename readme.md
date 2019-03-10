@@ -8,7 +8,7 @@ It speaks the Printer Job Language (PJL) over the RAW "protocol".
 Logs are in format: `time - loglevel - method - operation - message`
 
 ## Requirements
-* Python >= 3.6
+* Python >= 3.5
 
 ## PJL Support
 
