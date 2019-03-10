@@ -10,7 +10,7 @@ import sys
 import traceback
 
 
-log_location = Path("./miniprint.log")
+log_location = "./miniprint.log"
 
 conn_timeout = 120 # Seconds to wait for request before closing connection
 
@@ -252,8 +252,8 @@ if __name__ == "__main__":
     HOST, PORT = "localhost", 9100
     
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
-        # Activate the server; this will keep running until you
-        # interrupt the program with Ctrl-C
-        server.allow_reuse_address = True
-        server.serve_forever()
+    server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
+    # Activate the server; this will keep running until you
+    # interrupt the program with Ctrl-C
+    server.allow_reuse_address = True
+    server.serve_forever()
