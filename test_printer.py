@@ -12,7 +12,7 @@ logger.addHandler(ch)
 
 def test_echo():
     p = Printer(logger)
-    r = p.command_echo('@PJL ECHO DELIMITER20687')
+    r = p.command_echo('ECHO DELIMITER20687')
     assert r == '@PJL ECHO DELIMITER20687\x1b'
     
 
