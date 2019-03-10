@@ -33,7 +33,11 @@ class Printer:
     
         return request_parameters
     
+    
+    def does_path_exist(self, path):
+        return self.fos.path.exists(path)
         
+    
     def command_echo(self, request):
         self.logger.info("echo - request - Received request for delimiter")
         response = "@PJL " + request
@@ -59,9 +63,9 @@ class Printer:
         else:
             return_entries = "FILEERROR = 3" # "file not found"
     
-        response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '"' + return_entries).encode("UTF_8")
-        self.logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
-        return return_entries
+        response = '@PJL FSDIRLIST NAME=' + request_parameters['NAME'] + return_entries
+        self.logger.info("fsdirlist - response - " + str(response.encode('UTF-8')))
+        return response
         
 
     def command_fsmkdir(self, request):
@@ -124,7 +128,7 @@ class Printer:
         rdymsg = request_parameters["DISPLAY"]
         self.logger.info("rdymsg - request - Ready message: " + rdymsg)
     
-        self.ready_msg = rdymsg
+        self.ready_msg = rdymsg.replace('"', '')
         self.logger.info("rdymsg - response - Sending back empty ACK")
         return ''
     
