@@ -5,9 +5,9 @@ from os.path import isfile, join, abspath, exists
 from pathlib import Path
 import logging
 import select
-from pyfakefs import fake_filesystem
 import sys
 import traceback
+from printer import Printer
 
 
 log_location = "./miniprint.log"
@@ -31,147 +31,6 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 
-def create_fake_filesystem(fs):
-    fs.create_dir("/PJL")
-    fs.create_dir("/PostScript")
-    fs.create_dir("/saveDevice/SavedJobs/InProgress")
-    fs.create_dir("/saveDevice/SavedJobs/KeepJob")
-    fs.create_dir("/webServer/default")
-    fs.create_dir("/webServer/home")
-    fs.create_dir("/webServer/lib")
-    fs.create_dir("/webServer/objects")
-    fs.create_dir("/webServer/permanent")
-    fs.create_file("/webServer/default/csconfig")
-    fs.create_file("/webServer/home/device.html")
-    fs.create_file("/webServer/home/hostmanifest")
-    fs.create_file("/webServer/lib/keys")
-    fs.create_file("/webServer/lib/security")
-
-
-def get_parameters(command):
-    request_parameters = {}
-    for item in command.split(" "):
-        if ("=" in item):
-            request_parameters[item.split("=")[0]] = item.split("=")[1]
-
-    return request_parameters
-
-
-def command_fsdirlist(request, printer):
-    request_parameters = get_parameters(request)
-    requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
-
-    logger.debug("fsdirlist - request - Requested dir: '" + requested_dir + "'")
-    return_entries = ""
-
-    if printer.fos.path.exists(requested_dir):
-        return_entries = ' ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR'
-        for entry in printer.fos.scandir(requested_dir):
-            if entry.is_file():
-                return_entries += "\r\n" + entry.name + " TYPE=FILE SIZE=0" #TODO check size
-            elif entry.is_dir():
-                return_entries += "\r\n" + entry.name + " TYPE=DIR"
-    else:
-        return_entries = "FILEERROR = 3" # "file not found"
-
-    response = ('@PJL FSDIRLIST NAME="' + request_parameters['NAME'] + '"' + return_entries).encode("UTF_8")
-    logger.info("fsdirlist - response - " + str(return_entries.encode('UTF-8')))
-    return return_entries
-    
-
-def command_fsquery(request, printer):
-    request_parameters = get_parameters(request)
-    logger.info("fsquery - request - " + request_parameters["NAME"])
-
-    requested_item = request_parameters["NAME"].replace('"', '').split(":")[1]
-    logger.debug("fsquery - request - requested_item: " + requested_item)
-    return_data = ''
-
-    if (printer.fos.path.exists(requested_item)):
-        a = printer.fs.get_object(requested_item)
-        if type(a) == fake_filesystem.FakeFile:
-            return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=0" # TODO Get actual file size
-        elif type(a) == fake_filesystem.FakeDirectory:
-            return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
-    else:
-        return_data = "NAME=" + request_parameters["NAME"] + " FILEERROR=3\r\n" # File not found
-
-    response='@PJL FSQUERY ' + return_data
-    logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
-    return response
-
-
-def command_fsmkdir(request, printer):
-    request_parameters = get_parameters(request)
-    requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
-    logger.info("fsmkdir - request - " + requested_dir)
-
-    """
-    Check if dir exists
-        If it does, do nothing and return empty ACK
-        If it doesn't, create dir and return empty ACK
-    """
-    if printer.fos.path.exists(requested_dir):
-        pass
-    else:
-        printer.fs.create_dir(requested_dir)
-
-    logger.info("fsquery - response - Sending empty response")
-    return ''
-
-
-def command_rdymsg(request, printer):
-    request_parameters = get_parameters(request)
-    rdymsg = request_parameters["DISPLAY"]
-    logger.info("rdymsg - request - Ready message: " + rdymsg)
-
-    printer.ready_msg = rdymsg
-    logger.info("rdymsg - response - Sending back empty ACK")
-    return ''
-
-
-def command_ustatusoff(request):
-    logger.info("ustatusoff - request - Request received")
-    logger.info("ustatusoff - response - Sending empty reply")
-    return ''
-
-
-def command_info_id(request, printer):
-    logger.info("info_id - request - ID requested")
-    response = '@PJL INFO ID\r\n' + printer.id + '\r\n\x1b'
-    logger.info("info_id - response - " + str(response))
-    return response
-
-
-def command_info_status(request, printer):
-    logger.info("info_status - request - Client requests status")
-    response = '@PJL INFO STATUS\r\nCODE=' + str(printer.code) + '\r\nDISPLAY="' + printer.ready_msg + '"\r\nONLINE=' + str(printer.online)
-    logger.info("info_status - response - " + str(response.encode('UTF-8')))
-    return response 
-
-
-def command_echo(request):
-    logger.info("echo - request - Received request for delimiter")
-    response = ''
-    response = "@PJL " + request
-    response += '\x1b'
-    logger.info("echo - response - Responding with: " + str(response.encode('UTF-8')))
-    return response
-
-
-
-class Printer:
-    def __init__(self, id="hp LaserJet 4200", code=10001, ready_msg="Ready", 
-                    online=True):
-        self.id = id
-        self.code = code
-        self.ready_msg = ready_msg
-        self.online = online
-        self.fs = fake_filesystem.FakeFilesystem()
-        self.fos = fake_filesystem.FakeOsModule(self.fs)
-        create_fake_filesystem(self.fs)
-        
-
 class MyTCPHandler(socketserver.BaseRequestHandler):
     """
     The request handler class for our server.
@@ -184,7 +43,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         # self.request is the TCP socket connected to the client
         logger.info("handle - open_conn - " + self.client_address[0])
-        printer = Printer()
+        printer = Printer(logger)
         
         emptyRequest = False
         while emptyRequest == False:
@@ -220,21 +79,21 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     command = command.strip()
 
                     if command[0:4] == "ECHO":
-                        response += command_echo(command)
+                        response += printer.command_echo(command)
                     elif command == "USTATUSOFF":
-                        response += command_ustatusoff(command)
+                        response += printer.command_ustatusoff(command)
                     elif command == "INFO ID":
-                        response += command_info_id(command, printer)
+                        response += printer.command_info_id(command)
                     elif command == "INFO STATUS":
-                        response += command_info_status(command, printer)
+                        response += printer.command_info_status(command)
                     elif command[0:9] == "FSDIRLIST":
-                        response += command_fsdirlist(command, printer)
+                        response += printer.command_fsdirlist(command)
                     elif command[0:7] == "FSQUERY":
-                        response += command_fsquery(command, printer)
+                        response += printer.command_fsquery(command)
                     elif command[0:7] == "FSMKDIR":
-                        response += command_fsmkdir(command, printer)
+                        response += printer.command_fsmkdir(command)
                     elif command[0:6] == "RDYMSG":
-                        response += command_rdymsg(command, printer)
+                        response += printer.command_rdymsg(command)
                     else:
                         logger.error("handle - cmd_unknown - " + str(command))
 
