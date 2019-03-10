@@ -115,4 +115,5 @@ if __name__ == "__main__":
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
     server.allow_reuse_address = True
+    logger.info("main - start - Server started")
     server.serve_forever()
