@@ -48,11 +48,25 @@ Request to list directory:
 	`@PJL FSDIRLIST NAME="0:/nonexistent"\r\nFILEERROR=3\r\n`
 2. Response if it does
 
-
 ### FSDELETE
+* **Request**:
+	
+	Directory: `.%-12345X@PJL FSDELETE NAME="0:/newdir".%-12345X`
+	
+* **Response**:
+
+	`(Empty ACK)`
 ### FSDOWNLOAD
 ### FSINIT
 ### FSMKDIR
+* **Request**:
+
+	`.%-12345X@PJL FSMKDIR NAME="0:/newdir".%-12345X`
+
+* **Response**:
+
+	`(Empty ACK)`
+
 ### FSQUERY
 ### FSUPLOAD
 
