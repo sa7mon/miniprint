@@ -66,7 +66,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             commands = request.split('@PJL')
             commands = [a for a in commands if a] # Filter out empty list items since split() returns an empty string
 
-            logger.debug('handle - request - ' + str(request))
+            logger.debug('handle - request - ' + str(request.encode('UTF-8')))
 
             if len(commands) == 0:  # If we're sent an empty request, close the connection
                 emptyRequest = True
@@ -97,7 +97,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     else:
                         logger.error("handle - cmd_unknown - " + str(command))
 
-                logger.info("handle - response - " + response)
+                logger.info("handle - response - " + str(response.encode('UTF-8')))
                 self.request.sendall(response.encode('UTF-8')) 
 
             except Exception as e:
