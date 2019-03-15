@@ -112,7 +112,7 @@ class Printer:
     def command_info_id(self, request):
         self.logger.info("info_id - request - ID requested")
         response = '@PJL INFO ID\r\n' + self.id + '\r\n\x1b'
-        self.logger.info("info_id - response - " + str(response))
+        self.logger.info("info_id - response - " + str(response.encode('UTF-8')))
         return response
         
         

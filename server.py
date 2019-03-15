@@ -23,7 +23,7 @@ fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 # create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(levelname)5s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 # add the handlers to the logger
@@ -66,7 +66,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             commands = request.split('@PJL')
             commands = [a for a in commands if a] # Filter out empty list items since split() returns an empty string
 
-            logger.debug('handle - request - ' + str(request))
+            logger.debug('handle - request - ' + str(request.encode('UTF-8')))
 
             if len(commands) == 0:  # If we're sent an empty request, close the connection
                 emptyRequest = True
@@ -97,7 +97,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     else:
                         logger.error("handle - cmd_unknown - " + str(command))
 
-                logger.info("handle - response - " + response)
+                logger.info("handle - response - " + str(response.encode('UTF-8')))
                 self.request.sendall(response.encode('UTF-8')) 
 
             except Exception as e:
