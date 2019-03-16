@@ -44,7 +44,7 @@ Logs are in format: `time - loglevel - method - operation - message`
 | File System       |         FSDELETE        |         |
 | File System       |        FSDOWNLOAD       |         |
 | File System       |          FSINIT         |         |
-| File System       |         FSMKDIR         |         |
+| File System       |         FSMKDIR         |   Yes   |
 | File System       |         FSQUERY         |   Yes   |
 | File System       |         FSUPLOAD        |         |
 
