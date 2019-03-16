@@ -19,6 +19,33 @@
 ### DINQUIRE
 ### ECHO
 ### INFO
+
+#### INFO MEMORY
+* **Request**: 
+	`.%-12345X@PJL INFO MEMORY @PJL ECHO DELIMITER49751 .%-12345X`
+	
+* **Reponse:**:
+	
+	```
+	@PJL INFO MEMORY
+	TOTAL=27435520
+	LARGEST=15505376
+	.@PJL ECHO DELIMITER49751
+	.
+	```
+
+#### INFO PAGECOUNT
+* **Reqest**:
+	`.%-12345X@PJL INFO PAGECOUNT@PJL ECHO DELIMITER60705.%-12345X`
+
+* **Response**:
+	```
+	@PJL INFO PAGECOUNT
+	711797
+	.@PJL ECHO DELIMITER60705
+	.
+	```
+	
 ### USTATUS
 ### TIMED
 ### USTATUSOFF
@@ -69,4 +96,17 @@ Request to list directory:
 
 ### FSQUERY
 ### FSUPLOAD
+* **Request**:
+	
+	`.%-12345X@PJL FSUPLOAD NAME="0:/webServer/home/device.html" OFFSET=0 SIZE=171@PJL ECHO DELIMITER45288.%-12345X`
+	
+* **Response**:
 
+	```
+	@PJL FSUPLOAD FORMAT:BINARY NAME="0:/webServer/home/device.html" OFFSET=0 SIZE=171
+	<html><head>
+	<meta http-equiv="Refresh" content="0; URL=this.LCDispatcher?dispatch=html&cat=1&pos=0">
+	<title>Printer Content</title></head>
+	<body>
+	</body></html>.@PJL ECHO DELIMITER45288.
+	```
