@@ -84,6 +84,21 @@ Request to list directory:
 
 	`(Empty ACK)`
 ### FSDOWNLOAD
+* **Request**:
+	```
+	.%-12345X@PJL FSDOWNLOAD FORMAT:BINARY SIZE=47 NAME="0:/put_test.txt"
+	this is a file I'm uploading from my Mac
+
+	.%-12345X.%-12345X@PJL FSQUERY NAME="0:/put_test.txt"
+	@PJL ECHO DELIMITER30896
+
+	.%-12345X
+	```
+
+* **Response**:
+	
+	`(Empty ACK)`
+
 ### FSINIT
 ### FSMKDIR
 * **Request**:
