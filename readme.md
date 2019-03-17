@@ -10,6 +10,13 @@ Logs are in format: `time - loglevel - method - operation - message`
 ## Requirements
 * Python >= 3.5
 
+## Printer Language Support
+| **Language** | **Support** |
+|:------------:|:-----------:|
+|      PJL     |      No     |
+|      PCL     |      No     |
+|  PostScript  |      No     |
+
 ## PJL Support
 
 |      Category     | PJL Command/Sub-command | Support |
