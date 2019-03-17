@@ -40,6 +40,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     client.
     """
 
+
     def handle(self):
         # self.request is the TCP socket connected to the client
         logger.info("handle - open_conn - " + self.client_address[0])
@@ -63,6 +64,23 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
             request = self.data.decode('UTF-8')
             request = request.replace('\x1b%-12345X', '')
+
+            if request[0:2] == '%!':
+                printer.receiving_postscript = True
+                printer.postscript_data = request
+
+                logger.info('handle - postscript - Received first postscript request of file')
+
+                continue
+            elif printer.receiving_postscript:
+                printer.postscript_data += request
+
+                if '%%EOF' in request:
+                    printer.receiving_postscript = False
+                    printer.save_postscript()
+
+                continue
+            
             commands = request.split('@PJL')
             commands = [a for a in commands if a] # Filter out empty list items since split() returns an empty string
 

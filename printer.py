@@ -1,4 +1,5 @@
 from pyfakefs import fake_filesystem
+import time
 
 class Printer:
     def __init__(self, logger, id="hp LaserJet 4200", code=10001, ready_msg="Ready", online=True):
@@ -7,6 +8,8 @@ class Printer:
         self.ready_msg = ready_msg
         self.online = online
         self.logger = logger
+        self.receiving_postscript = False
+        self.postscript_data = ''
         self.fs = fake_filesystem.FakeFilesystem()
         self.fos = fake_filesystem.FakeOsModule(self.fs)
         self.fs.create_dir("/PJL")
@@ -138,3 +141,11 @@ class Printer:
         self.logger.info("ustatusoff - response - Sending empty reply")
         return ''
             
+
+    def save_postscript(self):
+        filename = './uploads/'+str(int(time.time()))+'.ps'
+        with open(filename, 'w') as f:
+            f.write(self.postscript_data)
+
+        self.logger.info('save_postscript - saved - ' + filename)
+
