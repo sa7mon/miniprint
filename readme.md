@@ -17,6 +17,14 @@ Logs are in format: `time - loglevel - method - operation - message`
 |      PCL     |      No     |
 |  PostScript  |      No     |
 
+## Printer Protocol Support
+| Protocol | Port | Support |
+|:--------:|:----:|:-------:|
+|    Raw   | 9100 |   Yes   |
+|    Web   |  80  |    No   |
+|    IPP   |  631 |    No   |
+|    LPD   |  515 |    No   |
+
 ## PJL Support
 
 |      Category     | PJL Command/Sub-command | Support |
