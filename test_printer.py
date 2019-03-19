@@ -29,6 +29,27 @@ def test_fsmkdir():
     assert p.does_path_exist("/testdir") == True
 
 
+def test_get_parameters():
+    p = Printer(logger)
+    params = p.get_parameters('@PJL RDYMSG DISPLAY = "rdymsg"')
+    assert params['DISPLAY'] == "rdymsg"
+
+    params = p.get_parameters('@PJL COMMAND A=1 B=2')
+    assert params['A'] == "1"
+    assert params['B'] == "2"
+
+    params = p.get_parameters('@PJL COMMAND A="value" B=2')
+    assert params['A'] == '"value"'
+    assert params['B'] == "2"
+
+    params = p.get_parameters('@PJL COMMAND A = 1 B = 2')
+    assert params['A'] == "1"
+    assert params['B'] == "2"
+
+    params = p.get_parameters('@PJL COMMAND A = 1     B = 2')
+    assert params['A'] == "1"
+    assert params['B'] == "2"
+
 def test_info_id_default():
     p = Printer(logger)
     r = p.command_info_id("")
