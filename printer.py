@@ -8,7 +8,7 @@ class Printer:
         self.ready_msg = ready_msg
         self.online = online
         self.logger = logger
-        self.rexp = re.compile(r'(.)\s+=\s+"([^=]+)"')  # Compile once to decrease match time over multiple uses
+        self.rexp = re.compile(r'\s+(\S+)\s+=\s+(?:"([^=]+)"|(\S+))')  # Compile once to decrease match time over multiple uses
         self.fs = fake_filesystem.FakeFilesystem()
         self.fos = fake_filesystem.FakeOsModule(self.fs)
         self.fs.create_dir("/PJL")
@@ -26,21 +26,45 @@ class Printer:
         self.fs.create_file("/webServer/lib/keys")
         self.fs.create_file("/webServer/lib/security")
     
-    
+
     def get_parameters(self, command):
+        '''
+            Gets key=value pairs seperated by either '=' or ' = '
+            Notes:
+                - Whitespace can be either a space charater or a \t
+                - Whitespace is only required before a key
+                    - Example: Immediately after the D in "@PJL COMMAND a=1"
+                - Whitespace surrounding the equal sign is optional and may be 0 or many characters
+                - String values must be surrounded by double quotes (")
+
+            Valid inputs:
+                @PJL COMMAND a = "b" b=2
+                @PJL COMMAND a = "asf" b = "asdf"
+                @PJL COMMAND a=2 b = "asd"
+                @PJL COMMAND DISPLAY = "rdymsg"
+                @PJL COMMAND DISPLAY = "rdymsg" OTHER = "asdf"
+                @PJL COMMAND A = 1 B = 2
+                @PJL COMMAND    A = 1     B = 2
+                @PJL COMMAND A = 1 B    =   2
+
+            Invalid inputs:
+                @PJL COMMANDA=1
+        '''
         request_parameters = {}
 
         # Get a=b value pairs
         for x in command.split(" "):
             if "=" in x and len(x) > 1:
-                request_parameters[x.split("=")[0]] = x.split("=")[1]
+                key = x.split("=")[0]
+                value = x.split("=")[1]
+                request_parameters[key] = value
 
         # Get a = "b" value pairs
         results = self.rexp.finditer(command)
         if results is not None:
             for r in results:
                 key = r.group(1)
-                value = r.group(2)
+                value = r.group(2) if r.group(2) is not None else r.group(3)
                 if key not in request_parameters:
                     request_parameters[key] = value
     
@@ -137,7 +161,8 @@ class Printer:
         
     
     def command_rdymsg(self, request):
-        request_parameters = self.get_parameters(request)
+        request_parameters = self.get_parameters(request.replace('@PJL RDYMSG ', ''))
+        self.logger.debug("rdymsg - request_parameters - " + str(request_parameters))
         rdymsg = request_parameters["DISPLAY"]
         self.logger.info("rdymsg - request - Ready message: " + rdymsg)
     
