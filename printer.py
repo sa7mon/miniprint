@@ -1,4 +1,5 @@
 from pyfakefs import fake_filesystem
+import re
 
 class Printer:
     def __init__(self, logger, id="hp LaserJet 4200", code=10001, ready_msg="Ready", online=True):
@@ -7,6 +8,7 @@ class Printer:
         self.ready_msg = ready_msg
         self.online = online
         self.logger = logger
+        self.rexp = re.compile(r'(.)\s+=\s+"([^=]+)"')  # Compile once to decrease match time over multiple uses
         self.fs = fake_filesystem.FakeFilesystem()
         self.fos = fake_filesystem.FakeOsModule(self.fs)
         self.fs.create_dir("/PJL")
@@ -27,9 +29,20 @@ class Printer:
     
     def get_parameters(self, command):
         request_parameters = {}
-        for item in command.split(" "):
-            if ("=" in item):
-                request_parameters[item.split("=")[0]] = item.split("=")[1]
+
+        # Get a=b value pairs
+        for x in command.split(" "):
+            if "=" in x and len(x) > 1:
+                request_parameters[x.split("=")[0]] = x.split("=")[1]
+
+        # Get a = "b" value pairs
+        results = self.rexp.finditer(command)
+        if results is not None:
+            for r in results:
+                key = r.group(1)
+                value = r.group(2)
+                if key not in request_parameters:
+                    request_parameters[key] = value
     
         return request_parameters
     
