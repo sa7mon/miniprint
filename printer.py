@@ -162,7 +162,6 @@ class Printer:
     
     def command_rdymsg(self, request):
         request_parameters = self.get_parameters(request.replace('@PJL RDYMSG ', ''))
-        self.logger.debug("rdymsg - request_parameters - " + str(request_parameters))
         rdymsg = request_parameters["DISPLAY"]
         self.logger.info("rdymsg - request - Ready message: " + rdymsg)
     
