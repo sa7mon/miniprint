@@ -15,39 +15,45 @@ fs.create_dir("/webServer/lib")
 fs.create_dir("/webServer/objects")
 fs.create_dir("/webServer/permanent")
 fs.create_file("/webServer/default/csconfig")
-fs.create_file("/webServer/home/device.html")
+# fs.create_file("/webServer/home/device.html")
+fs.add_real_file(source_path="../fake-files/device.html", read_only=True, target_path="/webServer/home/device.html")
 fs.create_file("/webServer/home/hostmanifest")
 fs.create_file("/webServer/lib/keys")
 fs.create_file("/webServer/lib/security")
+
+
+a = fs.get_object("/webServer/home/device.html")
+print(fos.stat("/webServer/home/device.html").st_size)
+
 
 # print(fs)
 
 # print(fos.path.exists("/webServer/lib/security"))
 
-paths = ["/webServer", "/webServer/lib", "/asf"]
+# paths = ["/webServer", "/webServer/lib", "/asf"]
 
-for path in paths:
-    print("path: ", path)
-    if not fos.path.exists(path):
-        print("Path doesn't exist.")
-        break
+# for path in paths:
+#     print("path: ", path)
+#     if not fos.path.exists(path):
+#         print("Path doesn't exist.")
+#         break
 
-    for entry in fos.scandir(path):
-        if entry.is_file():
-            print(entry.name, "FILE")
-        elif entry.is_dir():
-            print(entry.name, "DIR")
+#     for entry in fos.scandir(path):
+#         if entry.is_file():
+#             print(entry.name, "FILE")
+#         elif entry.is_dir():
+#             print(entry.name, "DIR")
 
-print("---------------------")
+# print("---------------------")
 
-paths = ["/webServer/lib", "/webServer/lib/keys"]
-for path in paths:
-    if fos.path.exists(path):
-        a = fs.get_object(path)
-        if type(a) == fake_filesystem.FakeFile:
-            print(path, " - exists - FILE")
-        elif type(a) == fake_filesystem.FakeDirectory:
-            print(path, "- exists - DIR")
+# paths = ["/webServer/lib", "/webServer/lib/keys"]
+# for path in paths:
+#     if fos.path.exists(path):
+#         a = fs.get_object(path)
+#         if type(a) == fake_filesystem.FakeFile:
+#             print(path, " - exists - FILE")
+#         elif type(a) == fake_filesystem.FakeDirectory:
+#             print(path, "- exists - DIR")
 
 
     # try:

@@ -29,6 +29,18 @@ def test_fsmkdir():
     assert p.does_path_exist("/testdir") == True
 
 
+def test_fsupload_bad():
+    p = Printer(logger)
+    r = p.command_fsupload('@PJL FSUPLOAD NAME="0:/none"')
+    assert r == '@PJL FSUPLOAD NAME="0:/none"\r\nFILEERROR=3\r\n'
+
+
+def test_fsupload_good():
+    p = Printer(logger)
+    r = p.command_fsupload('@PJL FSUPLOAD NAME="0:/webServer/home/device.html"')
+    assert r.encode('UTF-8') == b'@PJL FSUPLOAD FORMAT:BINARY NAME="0:/webServer/home/device.html" OFFSET=0 SIZE=165\r\n<html><head>\n<meta http-equiv="Refresh" content="0; URL=this.LCDispatcher?dispatch=html&cat=1&pos=0">\n<title>Printer Content</title></head>\n<body>\n</body></html>'
+
+
 def test_get_parameters():
     p = Printer(logger)
     params = p.get_parameters('@PJL RDYMSG DISPLAY = "rdymsg"')
@@ -49,6 +61,7 @@ def test_get_parameters():
     params = p.get_parameters('@PJL COMMAND A = 1     B = 2')
     assert params['A'] == "1"
     assert params['B'] == "2"
+
 
 def test_info_id_default():
     p = Printer(logger)

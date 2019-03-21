@@ -92,6 +92,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         response += printer.command_fsquery(command)
                     elif command[0:7] == "FSMKDIR":
                         response += printer.command_fsmkdir(command)
+                    elif command[0:8] == "FSUPLOAD":
+                        response += printer.command_fsupload(command)
                     elif command[0:6] == "RDYMSG":
                         response += printer.command_rdymsg(command)
                     else:
