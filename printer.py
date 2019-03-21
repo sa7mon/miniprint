@@ -157,8 +157,20 @@ class Printer:
     
         upload_file = request_parameters["NAME"].replace('"', '').split(":")[1]
         self.logger.debug("fsupload - request - requested file: " + upload_file)
+        return_data = ''
 
-        response=''
+        if (self.fos.path.exists(upload_file)):
+            contents = ''
+            file_module = fake_filesystem.FakeFileOpen(self.fs)
+            for line in file_module(upload_file):
+                contents += line
+
+            size = self.fos.stat(upload_file).st_size
+            return_data = 'FORMAT:BINARY NAME=' + request_parameters['NAME'] + ' OFFSET=0 SIZE=' + str(size) + '\r\n' + contents
+        else:
+            return_data = 'NAME=' + request_parameters['NAME'] + '\r\nFILEERROR=3\r\n'
+
+        response='@PJL FSUPLOAD ' + return_data
         self.logger.info("fsupload - response - " + str(response.encode('UTF-8')))
         return response
 
