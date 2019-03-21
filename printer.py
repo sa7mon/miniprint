@@ -96,7 +96,8 @@ class Printer:
             return_entries = ' ENTRY=1\r\n. TYPE=DIR\r\n.. TYPE=DIR'
             for entry in self.fos.scandir(requested_dir):
                 if entry.is_file():
-                    return_entries += "\r\n" + entry.name + " TYPE=FILE SIZE=0" #TODO check size
+                    size = self.fos.stat(requested_dir + "/" + str(entry.name)).st_size
+                    return_entries += "\r\n" + entry.name + " TYPE=FILE SIZE=" + str(size)
                 elif entry.is_dir():
                     return_entries += "\r\n" + entry.name + " TYPE=DIR"
         else:
