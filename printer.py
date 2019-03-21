@@ -11,6 +11,8 @@ class Printer:
         self.rexp = re.compile(r'\s+(\S+)\s+=\s+(?:"([^=]+)"|(\S+))')  # Compile once to decrease match time over multiple uses
         self.fs = fake_filesystem.FakeFilesystem()
         self.fos = fake_filesystem.FakeOsModule(self.fs)
+
+        # Filesystem from HP LaserJet 4200n
         self.fs.create_dir("/PJL")
         self.fs.create_dir("/PostScript")
         self.fs.create_dir("/saveDevice/SavedJobs/InProgress")
@@ -20,9 +22,9 @@ class Printer:
         self.fs.create_dir("/webServer/lib")
         self.fs.create_dir("/webServer/objects")
         self.fs.create_dir("/webServer/permanent")
-        self.fs.create_file("/webServer/default/csconfig")
-        self.fs.create_file("/webServer/home/device.html")
-        self.fs.create_file("/webServer/home/hostmanifest")
+        self.fs.add_real_file(source_path="fake-files/csconfig", read_only=True, target_path="/webServer/default/csconfig")
+        self.fs.add_real_file(source_path="fake-files/device.html", read_only=True, target_path="/webServer/home/device.html")
+        self.fs.add_real_file(source_path="fake-files/hostmanifest", read_only=True, target_path="/webServer/home/hostmanifest")
         self.fs.create_file("/webServer/lib/keys")
         self.fs.create_file("/webServer/lib/security")
     
@@ -136,6 +138,9 @@ class Printer:
             a = self.fs.get_object(requested_item)
             if type(a) == fake_filesystem.FakeFile:
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=0" # TODO Get actual file size
+            elif type(a) == fake_filesystem.FakeFileFromRealFile:
+                size = self.fos.stat(requested_item).st_size
+                return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
             elif type(a) == fake_filesystem.FakeDirectory:
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
         else:
@@ -145,6 +150,18 @@ class Printer:
         self.logger.info("fsquery - response - " + str(return_data.encode('UTF-8')))
         return response
     
+
+    def command_fsupload(self, request):
+        request_parameters = self.get_parameters(request)
+        self.logger.info("fsupload - request - " + request_parameters["NAME"])
+    
+        upload_file = request_parameters["NAME"].replace('"', '').split(":")[1]
+        self.logger.debug("fsupload - request - requested file: " + upload_file)
+
+        response=''
+        self.logger.info("fsupload - response - " + str(response.encode('UTF-8')))
+        return response
+
     
     def command_info_id(self, request):
         self.logger.info("info_id - request - ID requested")
