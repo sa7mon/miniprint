@@ -61,7 +61,7 @@ Logs are in format: `time - loglevel - method - operation - message`
 | File System       |          FSINIT         |         |
 | File System       |         FSMKDIR         |   Yes   |
 | File System       |         FSQUERY         |   Yes   |
-| File System       |         FSUPLOAD        |         |
+| File System       |         FSUPLOAD        |   Yes   |
 
 ## Thanks
 * to frbexiga at BinaryEdge
