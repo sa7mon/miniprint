@@ -22,8 +22,8 @@ fs.create_file("/webServer/lib/keys")
 fs.create_file("/webServer/lib/security")
 
 
-a = fs.get_object("/webServer/home/device.html")
-print(fos.stat("/webServer/home/device.html").st_size)
+a = fs.get_object("/webServer/default/csconfig")
+print(fos.stat("/webServer/default/csconfig").st_size)
 
 
 # print(fs)

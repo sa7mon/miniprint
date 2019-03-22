@@ -76,15 +76,17 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 response = ''
 
                 for command in commands:
-                    command = command.strip()
-
+                    command = command.lstrip()
+                    
+                    # TODO: Replace all these string slices with startswith()
+                    
                     if command[0:4] == "ECHO":
                         response += printer.command_echo(command)
-                    elif command == "USTATUSOFF":
+                    elif command[0:10] == "USTATUSOFF":
                         response += printer.command_ustatusoff(command)
-                    elif command == "INFO ID":
+                    elif command[0:7] == "INFO ID":
                         response += printer.command_info_id(command)
-                    elif command == "INFO STATUS":
+                    elif command[0:11] == "INFO STATUS":
                         response += printer.command_info_status(command)
                     elif command[0:9] == "FSDIRLIST":
                         response += printer.command_fsdirlist(command)
@@ -94,6 +96,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         response += printer.command_fsmkdir(command)
                     elif command[0:8] == "FSUPLOAD":
                         response += printer.command_fsupload(command)
+                    elif command[0:10] == "FSDOWNLOAD":
+                        response += printer.command_fsdownload(command)
                     elif command[0:6] == "RDYMSG":
                         response += printer.command_rdymsg(command)
                     else:

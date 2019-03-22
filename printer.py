@@ -48,6 +48,7 @@ class Printer:
                 @PJL COMMAND A = 1 B = 2
                 @PJL COMMAND    A = 1     B = 2
                 @PJL COMMAND A = 1 B    =   2
+                @PJL COMMAND A=1 B="asdf"\r\nother data
 
             Invalid inputs:
                 @PJL COMMANDA=1
@@ -59,6 +60,9 @@ class Printer:
             if "=" in x and len(x) > 1:
                 key = x.split("=")[0]
                 value = x.split("=")[1]
+
+                if value[0] == '"':  # Handle params like: KEY="VALUE"\r\nsome other data
+                    value = value[0:value[1:].index('"')+2]
                 request_parameters[key] = value
 
         # Get a = "b" value pairs
@@ -77,6 +81,32 @@ class Printer:
         return self.fos.path.exists(path)
         
     
+    def command_fsdownload(self, request):
+        request_parameters = self.get_parameters(request)
+        file_contents = request[request.index(request_parameters["NAME"])+len(request_parameters["NAME"]):]
+        file_name = request_parameters["NAME"].replace('"', '').split(":")[1]
+        
+        self.logger.debug(("fsdownload - process - contents: " + file_contents).encode('utf-8'))
+
+        if file_contents[0:2] == '\r\n':  # Trim leading newline
+            self.logger.debug("fsdownload - process - Leading newline found")
+            file_contents = file_contents[2:]
+
+        if file_contents[-2:] == '\r\n':  # Trim trailing newline
+            self.logger.debug("fsdownload - process - Trailing newline found")
+            file_contents = file_contents[0:-2]
+
+        # Check if path exists and is file
+        if (self.fos.path.exists(file_name)):
+            a = self.fs.get_object(file_name)
+            if type(a) == fake_filesystem.FakeFile or type(a) == fake_filesystem.FakeFileFromRealFile:
+                self.fos.remove(file_name)
+
+        self.fs.create_file(file_path=file_name, contents=file_contents)  # TODO: Handle errors if file exists or containing directory doesn't exist
+        self.logger.info("fsdownload - response - Sending empty response")
+        return ''
+
+
     def command_echo(self, request):
         self.logger.info("echo - request - Received request for delimiter")
         response = "@PJL " + request
@@ -137,8 +167,9 @@ class Printer:
     
         if (self.fos.path.exists(requested_item)):
             a = self.fs.get_object(requested_item)
-            if type(a) == fake_filesystem.FakeFile:
-                return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=0" # TODO Get actual file size
+            if type(a) == fake_filesystem.FakeFile:  # TODO: Combine these two conditions
+                size = self.fos.stat(requested_item).st_size
+                return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
             elif type(a) == fake_filesystem.FakeFileFromRealFile:
                 size = self.fos.stat(requested_item).st_size
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)

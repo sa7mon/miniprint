@@ -99,6 +99,9 @@ Request to list directory:
 	
 	`(Empty ACK)`
 
+* **Conditions**:
+	* If remote file already exists, overwrite it and respond normally
+
 ### FSINIT
 ### FSMKDIR
 * **Request**:
