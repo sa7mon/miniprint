@@ -76,7 +76,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 response = ''
 
                 for command in commands:
-                    command = command.strip()
+                    command = command.lstrip()
 
                     if command[0:4] == "ECHO":
                         response += printer.command_echo(command)
@@ -94,6 +94,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         response += printer.command_fsmkdir(command)
                     elif command[0:8] == "FSUPLOAD":
                         response += printer.command_fsupload(command)
+                    elif command[0:10] == "FSDOWNLOAD":
+                        response += printer.command_fsdownload(command)
                     elif command[0:6] == "RDYMSG":
                         response += printer.command_rdymsg(command)
                     else:

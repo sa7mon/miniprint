@@ -62,6 +62,10 @@ def test_get_parameters():
     assert params['A'] == "1"
     assert params['B'] == "2"
 
+    params = p.get_parameters('@PJL COMMAND A=45 B="0:/test.txt"\r\nheres a bunch of other data')
+    assert params['A'] == "45"
+    assert params['B'] == '"0:/test.txt"'
+
 
 def test_info_id_default():
     p = Printer(logger)
