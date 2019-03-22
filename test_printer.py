@@ -16,6 +16,22 @@ def test_echo():
     assert r == '@PJL ECHO DELIMITER20687\x1b'
     
 
+def test_fsdownload():
+    p = Printer(logger)
+    c = b'FSDOWNLOAD FORMAT:BINARY SIZE=52 NAME="0:/test2.txt"\r\nthis is a file with only one line and no line breaks\r\n'
+    r = p.command_fsdownload(c.decode('UTF-8'))
+    assert r == ''
+
+    r = p.command_fsquery('@PJL FSQUERY NAME="0:/test2.txt"')
+    assert r == '@PJL FSQUERY NAME="0:/test2.txt" TYPE=FILE SIZE=52'
+
+    c = b'FSDOWNLOAD FORMAT:BINARY SIZE=77 NAME="0:/test2.txt"\r\nthis is a file with 2 lines\nhere is the second line with no ending line break\r\n'
+    r = p.command_fsdownload(c.decode('UTF-8'))
+    assert r == ''
+
+    r = p.command_fsquery('@PJL FSQUERY NAME="0:/test2.txt"')
+    assert r == '@PJL FSQUERY NAME="0:/test2.txt" TYPE=FILE SIZE=77'
+
 def test_fsquery():
     p = Printer(logger)
     r = p.command_fsquery('@PJL FSQUERY NAME="0:/webServer"')

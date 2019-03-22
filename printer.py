@@ -96,6 +96,12 @@ class Printer:
             self.logger.debug("fsdownload - process - Trailing newline found")
             file_contents = file_contents[0:-2]
 
+        # Check if path exists and is file
+        if (self.fos.path.exists(file_name)):
+            a = self.fs.get_object(file_name)
+            if type(a) == fake_filesystem.FakeFile or type(a) == fake_filesystem.FakeFileFromRealFile:
+                self.fos.remove(file_name)
+
         self.fs.create_file(file_path=file_name, contents=file_contents)  # TODO: Handle errors if file exists or containing directory doesn't exist
         self.logger.info("fsdownload - response - Sending empty response")
         return ''
@@ -161,7 +167,7 @@ class Printer:
     
         if (self.fos.path.exists(requested_item)):
             a = self.fs.get_object(requested_item)
-            if type(a) == fake_filesystem.FakeFile:
+            if type(a) == fake_filesystem.FakeFile:  # TODO: Combine these two conditions
                 size = self.fos.stat(requested_item).st_size
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
             elif type(a) == fake_filesystem.FakeFileFromRealFile:
