@@ -1,7 +1,14 @@
+# miniprint
+
+<img align="right" width="212" height="288" src="https://user-images.githubusercontent.com/3712226/54861896-dbd43600-4cff-11e9-8700-21a544f511cd.gif">
+
 A medium interaction printer honeypot
 
-* miniprint acts like a standard networked printer that has been accidentally exposed to the public internet. 
-* It speaks the Printer Job Language (PJL) over the RAW "protocol"
+## About 
+
+miniprint acts like a standard networked printer that has been accidentally exposed to the public internet. 
+
+It speaks the Printer Job Language (PJL) over the raw network "protocol"
 
 ## Logs
 Logs are in format: `time - loglevel - method - operation - message`
