@@ -1,6 +1,6 @@
 # miniprint
 
-<img align="right" width="212" height="288" src="https://user-images.githubusercontent.com/3712226/54861896-dbd43600-4cff-11e9-8700-21a544f511cd.gif">
+<img align="left" width="212" height="288" src="https://user-images.githubusercontent.com/3712226/54861896-dbd43600-4cff-11e9-8700-21a544f511cd.gif">
 
 A medium interaction printer honeypot
 
