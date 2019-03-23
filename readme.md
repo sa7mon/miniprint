@@ -1,5 +1,8 @@
 # miniprint
 
+[![Build Status](https://travis-ci.com/sa7mon/miniprint.svg?token=KqpCvMUSb1yeyAUKGDAx&branch=master)](https://travis-ci.com/sa7mon/miniprint)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6d424ff40c7d494e88b9bfe11c117e1f)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sa7mon/miniprint&amp;utm_campaign=Badge_Grade)
+
 <img align="left" width="212" height="288" src="https://user-images.githubusercontent.com/3712226/54861896-dbd43600-4cff-11e9-8700-21a544f511cd.gif">
 
 A medium interaction printer honeypot
