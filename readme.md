@@ -66,7 +66,7 @@ Logs are in format: `time - loglevel - method - operation - message`
 | File System       |         FSAPPEND        |         |
 | File System       |        FSDIRLIST        |   Yes   |
 | File System       |         FSDELETE        |         |
-| File System       |        FSDOWNLOAD       |         |
+| File System       |        FSDOWNLOAD       |   Yes   |
 | File System       |          FSINIT         |         |
 | File System       |         FSMKDIR         |   Yes   |
 | File System       |         FSQUERY         |   Yes   |
