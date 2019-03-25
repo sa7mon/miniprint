@@ -218,7 +218,7 @@ class Printer:
         self.logger.info("info_status - request - Client requests status")
         response = '@PJL INFO STATUS\r\nCODE=' + str(self.code) + '\r\nDISPLAY="' + self.ready_msg + '"\r\nONLINE=' + str(self.online)
         self.logger.info("info_status - response - " + str(response.encode('UTF-8')))
-        return response 
+        return response
         
     
     def command_rdymsg(self, request):
@@ -235,4 +235,4 @@ class Printer:
         self.logger.info("ustatusoff - request - Request received")
         self.logger.info("ustatusoff - response - Sending empty reply")
         return ''
-            
+

@@ -113,7 +113,7 @@ def test_rdymsg():
     r = p.command_rdymsg('@PJL RDYMSG DISPLAY="hello"')
     assert p.ready_msg == 'hello'
     assert r == ''
-    
+
 
 def test_ustatusoff():
     p = Printer(logger)

@@ -104,7 +104,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         logger.error("handle - cmd_unknown - " + str(command))
 
                 logger.info("handle - response - " + str(response.encode('UTF-8')))
-                self.request.sendall(response.encode('UTF-8')) 
+                self.request.sendall(response.encode('UTF-8'))
 
             except Exception as e:
                 tb = sys.exc_info()[2]
@@ -115,7 +115,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 9100
-    
+
     socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
     # Activate the server; this will keep running until you
