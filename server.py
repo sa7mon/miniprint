@@ -1,8 +1,5 @@
 import socketserver
-import time
-import os
-from os.path import isfile, join, abspath, exists
-from pathlib import Path
+from os.path import isfile, join, abspath
 import logging
 import select
 import sys
@@ -53,7 +50,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             ready = select.select([self.request], [], [], conn_timeout)
             if not ready[0]:
                 break
-            
+
             try:
                 self.data = self.request.recv(1024).strip()
             except Exception as e:
@@ -77,9 +74,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
                 for command in commands:
                     command = command.lstrip()
-                    
+
                     # TODO: Replace all these string slices with startswith()
-                    
+
                     if command[0:4] == "ECHO":
                         response += printer.command_echo(command)
                     elif command[0:10] == "USTATUSOFF":
@@ -104,7 +101,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         logger.error("handle - cmd_unknown - " + str(command))
 
                 logger.info("handle - response - " + str(response.encode('UTF-8')))
-                self.request.sendall(response.encode('UTF-8')) 
+                self.request.sendall(response.encode('UTF-8'))
 
             except Exception as e:
                 tb = sys.exc_info()[2]
@@ -115,7 +112,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 9100
-    
+
     socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
     # Activate the server; this will keep running until you

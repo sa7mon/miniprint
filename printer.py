@@ -2,8 +2,8 @@ from pyfakefs import fake_filesystem
 import re
 
 class Printer:
-    def __init__(self, logger, id="hp LaserJet 4200", code=10001, ready_msg="Ready", online=True):
-        self.id = id
+    def __init__(self, logger, printer_id="hp LaserJet 4200", code=10001, ready_msg="Ready", online=True):
+        self.printer_id = printer_id
         self.code = code
         self.ready_msg = ready_msg
         self.online = online
@@ -99,7 +99,7 @@ class Printer:
         # Check if path exists and is file
         if (self.fos.path.exists(file_name)):
             a = self.fs.get_object(file_name)
-            if type(a) == fake_filesystem.FakeFile or type(a) == fake_filesystem.FakeFileFromRealFile:
+            if isinstance(a, fake_filesystem.FakeFile) or isinstance(a, fake_filesystem.FakeFileFromRealFile):
                 self.fos.remove(file_name)
 
         self.fs.create_file(file_path=file_name, contents=file_contents)  # TODO: Handle errors if file exists or containing directory doesn't exist
@@ -143,11 +143,11 @@ class Printer:
         requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
         self.logger.info("fsmkdir - request - " + requested_dir)
     
-        """
+        '''
         Check if dir exists
             If it does, do nothing and return empty ACK
             If it doesn't, create dir and return empty ACK
-        """
+        '''
         if self.fos.path.exists(requested_dir):
             pass
         else:
@@ -167,13 +167,10 @@ class Printer:
     
         if (self.fos.path.exists(requested_item)):
             a = self.fs.get_object(requested_item)
-            if type(a) == fake_filesystem.FakeFile:  # TODO: Combine these two conditions
+            if self.fos.path.isfile(requested_item):
                 size = self.fos.stat(requested_item).st_size
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
-            elif type(a) == fake_filesystem.FakeFileFromRealFile:
-                size = self.fos.stat(requested_item).st_size
-                return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
-            elif type(a) == fake_filesystem.FakeDirectory:
+            elif self.fos.path.isdir(requested_item):
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
         else:
             return_data = "NAME=" + request_parameters["NAME"] + " FILEERROR=3\r\n" # File not found
@@ -209,7 +206,7 @@ class Printer:
     
     def command_info_id(self, request):
         self.logger.info("info_id - request - ID requested")
-        response = '@PJL INFO ID\r\n' + self.id + '\r\n\x1b'
+        response = '@PJL INFO ID\r\n' + self.printer_id + '\r\n\x1b'
         self.logger.info("info_id - response - " + str(response.encode('UTF-8')))
         return response
         
@@ -218,21 +215,21 @@ class Printer:
         self.logger.info("info_status - request - Client requests status")
         response = '@PJL INFO STATUS\r\nCODE=' + str(self.code) + '\r\nDISPLAY="' + self.ready_msg + '"\r\nONLINE=' + str(self.online)
         self.logger.info("info_status - response - " + str(response.encode('UTF-8')))
-        return response 
-        
-    
+        return response
+
+
     def command_rdymsg(self, request):
         request_parameters = self.get_parameters(request)
         rdymsg = request_parameters["DISPLAY"]
         self.logger.info("rdymsg - request - Ready message: " + rdymsg)
-    
+
         self.ready_msg = rdymsg.replace('"', '')
         self.logger.info("rdymsg - response - Sending back empty ACK")
         return ''
-    
-    
+
+
     def command_ustatusoff(self, request):
         self.logger.info("ustatusoff - request - Request received")
         self.logger.info("ustatusoff - response - Sending empty reply")
         return ''
-            
+

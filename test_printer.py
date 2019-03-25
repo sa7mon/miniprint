@@ -91,7 +91,7 @@ def test_info_id_default():
 
 def test_info_id_custom():
     printer_id = "my custom printer"
-    p2 = Printer(logger, id=printer_id)
+    p2 = Printer(logger, printer_id=printer_id)
     r2 = p2.command_info_id("")
     assert r2 == '@PJL INFO ID\r\n' + printer_id + '\r\n\x1b'
     
@@ -113,7 +113,7 @@ def test_rdymsg():
     r = p.command_rdymsg('@PJL RDYMSG DISPLAY="hello"')
     assert p.ready_msg == 'hello'
     assert r == ''
-    
+
 
 def test_ustatusoff():
     p = Printer(logger)
