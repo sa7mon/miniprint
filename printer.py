@@ -219,8 +219,8 @@ class Printer:
         response = '@PJL INFO STATUS\r\nCODE=' + str(self.code) + '\r\nDISPLAY="' + self.ready_msg + '"\r\nONLINE=' + str(self.online)
         self.logger.info("info_status - response - " + str(response.encode('UTF-8')))
         return response
-        
-    
+
+
     def command_rdymsg(self, request):
         request_parameters = self.get_parameters(request)
         rdymsg = request_parameters["DISPLAY"]
@@ -229,7 +229,7 @@ class Printer:
         self.ready_msg = rdymsg.replace('"', '')
         self.logger.info("rdymsg - response - Sending back empty ACK")
         return ''
-    
+
 
     def command_ustatusoff(self, request):
         self.logger.info("ustatusoff - request - Request received")

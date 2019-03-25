@@ -1,8 +1,5 @@
 import socketserver
-import time
-import os
-from os.path import isfile, join, abspath, exists
-from pathlib import Path
+from os.path import isfile, join, abspath
 import logging
 import select
 import sys
@@ -77,9 +74,9 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
                 for command in commands:
                     command = command.lstrip()
-                    
+
                     # TODO: Replace all these string slices with startswith()
-                    
+
                     if command[0:4] == "ECHO":
                         response += printer.command_echo(command)
                     elif command[0:10] == "USTATUSOFF":
