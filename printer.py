@@ -167,13 +167,10 @@ class Printer:
     
         if (self.fos.path.exists(requested_item)):
             a = self.fs.get_object(requested_item)
-            if isinstance(a, fake_filesystem.FakeFile):  # TODO: Combine these two conditions
+            if self.fos.path.isfile(requested_item):
                 size = self.fos.stat(requested_item).st_size
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
-            elif isinstance(a, fake_filesystem.FakeFileFromRealFile):
-                size = self.fos.stat(requested_item).st_size
-                return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
-            elif isinstance(a, fake_filesystem.FakeDirectory):
+            elif self.fos.path.isdir(requested_item):
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
         else:
             return_data = "NAME=" + request_parameters["NAME"] + " FILEERROR=3\r\n" # File not found
