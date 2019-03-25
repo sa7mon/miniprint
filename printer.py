@@ -2,8 +2,8 @@ from pyfakefs import fake_filesystem
 import re
 
 class Printer:
-    def __init__(self, logger, id="hp LaserJet 4200", code=10001, ready_msg="Ready", online=True):
-        self.id = id
+    def __init__(self, logger, printer_id="hp LaserJet 4200", code=10001, ready_msg="Ready", online=True):
+        self.printer_id = printer_id
         self.code = code
         self.ready_msg = ready_msg
         self.online = online
@@ -209,7 +209,7 @@ class Printer:
     
     def command_info_id(self, request):
         self.logger.info("info_id - request - ID requested")
-        response = '@PJL INFO ID\r\n' + self.id + '\r\n\x1b'
+        response = '@PJL INFO ID\r\n' + self.printer_id + '\r\n\x1b'
         self.logger.info("info_id - response - " + str(response.encode('UTF-8')))
         return response
         
