@@ -50,7 +50,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
             ready = select.select([self.request], [], [], conn_timeout)
             if not ready[0]:
                 break
-            
+
             try:
                 self.data = self.request.recv(1024).strip()
             except Exception as e:

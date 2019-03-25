@@ -99,7 +99,7 @@ class Printer:
         # Check if path exists and is file
         if (self.fos.path.exists(file_name)):
             a = self.fs.get_object(file_name)
-            if type(a) == fake_filesystem.FakeFile or type(a) == fake_filesystem.FakeFileFromRealFile:
+            if isinstance(a, fake_filesystem.FakeFile) or isinstance(a, fake_filesystem.FakeFileFromRealFile):
                 self.fos.remove(file_name)
 
         self.fs.create_file(file_path=file_name, contents=file_contents)  # TODO: Handle errors if file exists or containing directory doesn't exist
@@ -167,13 +167,13 @@ class Printer:
     
         if (self.fos.path.exists(requested_item)):
             a = self.fs.get_object(requested_item)
-            if type(a) == fake_filesystem.FakeFile:  # TODO: Combine these two conditions
+            if isinstance(a, fake_filesystem.FakeFile):  # TODO: Combine these two conditions
                 size = self.fos.stat(requested_item).st_size
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
-            elif type(a) == fake_filesystem.FakeFileFromRealFile:
+            elif isinstance(a, fake_filesystem.FakeFileFromRealFile):
                 size = self.fos.stat(requested_item).st_size
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
-            elif type(a) == fake_filesystem.FakeDirectory:
+            elif isinstance(a, fake_filesystem.FakeDirectory):
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=DIR"
         else:
             return_data = "NAME=" + request_parameters["NAME"] + " FILEERROR=3\r\n" # File not found
@@ -225,7 +225,7 @@ class Printer:
         request_parameters = self.get_parameters(request)
         rdymsg = request_parameters["DISPLAY"]
         self.logger.info("rdymsg - request - Ready message: " + rdymsg)
-    
+
         self.ready_msg = rdymsg.replace('"', '')
         self.logger.info("rdymsg - response - Sending back empty ACK")
         return ''
