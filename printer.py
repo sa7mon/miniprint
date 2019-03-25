@@ -143,11 +143,11 @@ class Printer:
         requested_dir = request_parameters["NAME"].replace('"', '').split(":")[1]
         self.logger.info("fsmkdir - request - " + requested_dir)
     
-        """
+        '''
         Check if dir exists
             If it does, do nothing and return empty ACK
             If it doesn't, create dir and return empty ACK
-        """
+        '''
         if self.fos.path.exists(requested_dir):
             pass
         else:
@@ -230,7 +230,7 @@ class Printer:
         self.logger.info("rdymsg - response - Sending back empty ACK")
         return ''
     
-    
+
     def command_ustatusoff(self, request):
         self.logger.info("ustatusoff - request - Request received")
         self.logger.info("ustatusoff - response - Sending empty reply")
