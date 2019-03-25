@@ -77,25 +77,25 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
                     # TODO: Replace all these string slices with startswith()
 
-                    if command[0:4] == "ECHO":
+                    if command.startswith("ECHO"):
                         response += printer.command_echo(command)
-                    elif command[0:10] == "USTATUSOFF":
+                    elif command.startswith("USTATUSOFF"):
                         response += printer.command_ustatusoff(command)
-                    elif command[0:7] == "INFO ID":
+                    elif command.startswith("INFO ID"):
                         response += printer.command_info_id(command)
-                    elif command[0:11] == "INFO STATUS":
+                    elif command.startswith("INFO STATUS"):
                         response += printer.command_info_status(command)
-                    elif command[0:9] == "FSDIRLIST":
+                    elif command.startswith("FSDIRLIST"):
                         response += printer.command_fsdirlist(command)
-                    elif command[0:7] == "FSQUERY":
+                    elif command.startswith("FSQUERY"):
                         response += printer.command_fsquery(command)
-                    elif command[0:7] == "FSMKDIR":
+                    elif command.startswith("FSMKDIR"):
                         response += printer.command_fsmkdir(command)
-                    elif command[0:8] == "FSUPLOAD":
+                    elif command.startswith("FSUPLOAD"):
                         response += printer.command_fsupload(command)
-                    elif command[0:10] == "FSDOWNLOAD":
+                    elif command.startswith("FSDOWNLOAD"):
                         response += printer.command_fsdownload(command)
-                    elif command[0:6] == "RDYMSG":
+                    elif command.startswith("RDYMSG"):
                         response += printer.command_rdymsg(command)
                     else:
                         logger.error("handle - cmd_unknown - " + str(command))
