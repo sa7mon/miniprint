@@ -4,7 +4,6 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6d424ff40c7d494e88b9bfe11c117e1f)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sa7mon/miniprint&amp;utm_campaign=Badge_Grade)
 [![License](https://img.shields.io/github/license/sa7mon/miniprint.svg)](https://github.com/sa7mon/miniprint/blob/master/LICENSE.md)
 
-
 <img align="right" width="212" height="288" src="https://user-images.githubusercontent.com/3712226/54886937-78f7b180-4e5b-11e9-8ccc-18716f2b5a3b.png">
 
 A medium interaction printer honeypot
@@ -19,7 +18,7 @@ It speaks the Printer Job Language (PJL) over the raw network "protocol"
 Logs are in format: `time - loglevel - method - operation - message`
 
 ## Requirements
-* Python >= 3.5
+  * Python >= 3.5
 
 ## Printer Language Support
 | **Language** | **Support** |
@@ -75,4 +74,4 @@ Logs are in format: `time - loglevel - method - operation - message`
 | File System       |         FSUPLOAD        |   Yes   |
 
 ## Thanks
-* to frbexiga at BinaryEdge
+  * to frbexiga at BinaryEdge
