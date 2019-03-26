@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 import socketserver
-from os.path import isfile, join, abspath
+from os.path import isfile, join
 import logging
 import select
 import sys
@@ -63,7 +63,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         
         emptyRequest = False
         while emptyRequest == False:
-            
+
             # Wait a maximum of conn_timeout seconds for another request
             # If conn_timeout elapses without request, close the connection
             ready = select.select([self.request], [], [], conn_timeout)
