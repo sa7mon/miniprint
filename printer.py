@@ -185,7 +185,6 @@ class Printer:
         return_data = ''
     
         if (self.fos.path.exists(requested_item)):
-            a = self.fs.get_object(requested_item)
             if self.fos.path.isfile(requested_item):
                 size = self.fos.stat(requested_item).st_size
                 return_data = "NAME=" + request_parameters["NAME"] + " TYPE=FILE SIZE=" + str(size)
@@ -229,7 +228,7 @@ class Printer:
         self.logger.info("info_id - response - " + str(response.encode('UTF-8')))
         return response
         
-        
+
     def command_info_status(self, request):
         self.logger.info("info_status - request - Client requests status")
         response = '@PJL INFO STATUS\r\nCODE=' + str(self.code) + '\r\nDISPLAY="' + self.ready_msg + '"\r\nONLINE=' + str(self.online)
