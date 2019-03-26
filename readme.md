@@ -74,4 +74,5 @@ Logs are in format: `time - loglevel - method - operation - message`
 | File System       |         FSUPLOAD        |   Yes   |
 
 ## Thanks
-  * to frbexiga at BinaryEdge
+  * frbexiga at BinaryEdge
+  * Jens Müller for the [hacking-printers.net](https://hacking-printers.net/wiki/) wiki
