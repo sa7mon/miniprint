@@ -27,7 +27,8 @@ from printer import Printer
 import argparse
 
 
-parser = argparse.ArgumentParser(description='miniprint - a medium interaction printer honeypot',
+parser = argparse.ArgumentParser(description='''miniprint - a medium interaction printer honeypot
+       by Dan Salmon: @BLTjetpack, github.com/sa7mon ''',
         prog='miniprint',
         usage='%(prog)s [-b,--bind HOST] [-l,--log-file FILE] [-t,--time-out TIME] [-h]',
         formatter_class=argparse.RawDescriptionHelpFormatter,
