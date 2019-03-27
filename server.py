@@ -48,7 +48,6 @@ args = parser.parse_args()
 
 conn_timeout = args.timeout
 log_location = args.log_file
-# host = args.bind
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
