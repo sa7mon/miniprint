@@ -24,11 +24,21 @@ import select
 import sys
 import traceback
 from printer import Printer
+import argparse
 
 
-log_location = "./miniprint.log"
+parser = argparse.ArgumentParser(description='A medium interaction printer honeypot', prog='miniprint',
+                                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-conn_timeout = 120 # Seconds to wait for request before closing connection
+parser.add_argument('-b', '--bind', default='localhost', help='Host to bind the server to')
+parser.add_argument('-l', '--log-file', default='./miniprint.log', help='Name of file to log to')
+parser.add_argument('-t' ,'--timeout', type=int, default=120, 
+                        help='Maximum seconds to wait for a command before disconnecting from a client')
+
+args = parser.parse_args()
+
+conn_timeout = args.timeout
+log_location = args.log_file
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
