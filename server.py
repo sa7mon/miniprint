@@ -27,18 +27,27 @@ from printer import Printer
 import argparse
 
 
-parser = argparse.ArgumentParser(description='A medium interaction printer honeypot', prog='miniprint',
-                                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(description='miniprint - a medium interaction printer honeypot',
+        prog='miniprint',
+        usage='%(prog)s [-b,--bind HOST] [-l,--log-file FILE] [-t,--time-out TIME] [-h]',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        add_help=False)
 
-parser.add_argument('-b', '--bind', default='localhost', help='Host to bind the server to')
-parser.add_argument('-l', '--log-file', default='./miniprint.log', help='Name of file to log to')
-parser.add_argument('-t' ,'--timeout', type=int, default=120, 
-                        help='Maximum seconds to wait for a command before disconnecting from a client')
+o = parser.add_argument_group(title='optional arguments',
+        description='''-b, --bind <host>       Bind the server to <host> (default: localhost)
+-l, --log-file <file>   Save all logs to <file> (default: ./miniprint.log)
+-t, --timeout <time>    Wait up to <time> seconds for commands before disconnecting client (default: 120)''')
+
+o.add_argument('-b', '--bind', dest='host', default='localhost', help=argparse.SUPPRESS)
+o.add_argument("-h", "--help", action="help", help="show this help message and exit")
+o.add_argument('-l', '--log-file', dest='log_file', default='./miniprint.log', help=argparse.SUPPRESS)
+o.add_argument('-t' ,'--timeout', type=int, dest='timeout', default=120, help=argparse.SUPPRESS)
 
 args = parser.parse_args()
 
 conn_timeout = args.timeout
 log_location = args.log_file
+# host = args.bind
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
@@ -140,7 +149,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         logger.info("handle - close_conn - " + self.client_address[0])
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 9100
+    HOST, PORT = args.host, 9100
 
     socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
