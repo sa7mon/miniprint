@@ -24,11 +24,30 @@ import select
 import sys
 import traceback
 from printer import Printer
+import argparse
 
 
-log_location = "./miniprint.log"
+parser = argparse.ArgumentParser(description='''miniprint - a medium interaction printer honeypot
+       by Dan Salmon: @BLTjetpack, github.com/sa7mon ''',
+        prog='miniprint',
+        usage='%(prog)s [-b,--bind HOST] [-l,--log-file FILE] [-t,--time-out TIME] [-h]',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        add_help=False)
 
-conn_timeout = 120 # Seconds to wait for request before closing connection
+o = parser.add_argument_group(title='optional arguments',
+        description='''-b, --bind <host>       Bind the server to <host> (default: localhost)
+-l, --log-file <file>   Save all logs to <file> (default: ./miniprint.log)
+-t, --timeout <time>    Wait up to <time> seconds for commands before disconnecting client (default: 120)''')
+
+o.add_argument('-b', '--bind', dest='host', default='localhost', help=argparse.SUPPRESS)
+o.add_argument("-h", "--help", action="help", help="show this help message and exit")
+o.add_argument('-l', '--log-file', dest='log_file', default='./miniprint.log', help=argparse.SUPPRESS)
+o.add_argument('-t' ,'--timeout', type=int, dest='timeout', default=120, help=argparse.SUPPRESS)
+
+args = parser.parse_args()
+
+conn_timeout = args.timeout
+log_location = args.log_file
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
@@ -130,7 +149,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         logger.info("handle - close_conn - " + self.client_address[0])
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 9100
+    HOST, PORT = args.host, 9100
 
     socketserver.TCPServer.allow_reuse_address = True
     server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
