@@ -75,8 +75,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     override the handle() method to implement communication to the
     client.
     """
-
-    def parse_commands(self, text):
+    @staticmethod
+    def parse_commands(text):
         '''
             Convert a string of commands to a list of commands. In the case of a print job (no @PJL prefix), append to the list untouched
 
