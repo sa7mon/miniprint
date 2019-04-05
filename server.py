@@ -25,6 +25,7 @@ import sys
 import traceback
 from printer import Printer
 import argparse
+import re
 
 
 parser = argparse.ArgumentParser(description='''miniprint - a medium interaction printer honeypot
@@ -74,6 +75,32 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     override the handle() method to implement communication to the
     client.
     """
+    @staticmethod
+    def parse_commands(text):
+        '''
+            Convert a string of commands to a list of commands. In the case of a print job (no @PJL prefix), append to the list untouched
+
+            Examples:
+                Input:  "@PJL USTATUSOFF\r\n@PJL INFO ID\r\n@PJL ECHO DELIMITER58494\r\n\r\n"
+                Output: ['@PJL USTATUSOFF\r\n', '@PJL INFO ID\r\n', '@PJL ECHO DELIMITER58494\r\n\r\n']
+
+                Input:  "This is my print job"
+                Output: ['This is my print job']
+        '''
+        commands = []
+        results = re.split('(@PJL)', text)
+        results = [x for x in results if x]  # In case we have empty list elements
+        
+        for i, result in enumerate(results):
+            if result == '@PJL':
+                continue
+            elif i > 0 and results[i-1] == '@PJL':
+                commands.append('@PJL' + results[i])
+            else:
+                commands.append(results[i])
+
+        return commands
+
 
     def handle(self):
         # self.request is the TCP socket connected to the client
@@ -98,8 +125,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
             request = self.data.decode('UTF-8')
             request = request.replace('\x1b%-12345X', '')
-            commands = request.split('@PJL')
-            commands = [a for a in commands if a] # Filter out empty list items since split() returns an empty string
+            commands = self.parse_commands(request)
 
             logger.debug('handle - request - ' + str(request.encode('UTF-8')))
 
@@ -112,31 +138,36 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
 
                 for command in commands:
                     command = command.lstrip()
+                    
+                    if command.startswith("@PJL "):
+                        command = command[5:]
+                        if printer.printing_raw_job:
+                            printer.save_raw_print_job()
 
-                    # TODO: Replace all these string slices with startswith()
-
-                    if command.startswith("ECHO"):
-                        response += printer.command_echo(command)
-                    elif command.startswith("USTATUSOFF"):
-                        response += printer.command_ustatusoff(command)
-                    elif command.startswith("INFO ID"):
-                        response += printer.command_info_id(command)
-                    elif command.startswith("INFO STATUS"):
-                        response += printer.command_info_status(command)
-                    elif command.startswith("FSDIRLIST"):
-                        response += printer.command_fsdirlist(command)
-                    elif command.startswith("FSQUERY"):
-                        response += printer.command_fsquery(command)
-                    elif command.startswith("FSMKDIR"):
-                        response += printer.command_fsmkdir(command)
-                    elif command.startswith("FSUPLOAD"):
-                        response += printer.command_fsupload(command)
-                    elif command.startswith("FSDOWNLOAD"):
-                        response += printer.command_fsdownload(command)
-                    elif command.startswith("RDYMSG"):
-                        response += printer.command_rdymsg(command)
+                        if command.startswith("ECHO"):
+                            response += printer.command_echo(command)
+                        elif command.startswith("USTATUSOFF"):
+                            response += printer.command_ustatusoff(command)
+                        elif command.startswith("INFO ID"):
+                            response += printer.command_info_id(command)
+                        elif command.startswith("INFO STATUS"):
+                            response += printer.command_info_status(command)
+                        elif command.startswith("FSDIRLIST"):
+                            response += printer.command_fsdirlist(command)
+                        elif command.startswith("FSQUERY"):
+                            response += printer.command_fsquery(command)
+                        elif command.startswith("FSMKDIR"):
+                            response += printer.command_fsmkdir(command)
+                        elif command.startswith("FSUPLOAD"):
+                            response += printer.command_fsupload(command)
+                        elif command.startswith("FSDOWNLOAD"):
+                            response += printer.command_fsdownload(command)
+                        elif command.startswith("RDYMSG"):
+                            response += printer.command_rdymsg(command)
+                        else:
+                            logger.error("handle - cmd_unknown - " + str(command))
                     else:
-                        logger.error("handle - cmd_unknown - " + str(command))
+                        response += printer.append_raw_print_job(command)
 
                 logger.info("handle - response - " + str(response.encode('UTF-8')))
                 self.request.sendall(response.encode('UTF-8'))
@@ -146,6 +177,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 traceback.print_tb(tb)
                 logger.error("handle - error_caught - " + str(e))
 
+        if printer.printing_raw_job:
+            printer.save_raw_print_job()
         logger.info("handle - close_conn - " + self.client_address[0])
 
 if __name__ == "__main__":

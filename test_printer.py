@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from printer import Printer
 import logging
+from glob import glob
+import os
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
@@ -50,6 +52,7 @@ def test_fsdownload():
 
     r = p.command_fsquery('@PJL FSQUERY NAME="0:/test2.txt"')
     assert r == '@PJL FSQUERY NAME="0:/test2.txt" TYPE=FILE SIZE=77'
+
 
 def test_fsquery():
     p = Printer(logger)
@@ -126,6 +129,26 @@ def test_info_status_custom():
     r = p.command_info_status("")
     assert r == '@PJL INFO STATUS\r\nCODE=140\r\nDISPLAY="testing"\r\nONLINE=True'
     
+
+def test_raw_print_job():
+    p = Printer(logger)
+    t = "TEST - this is the first line of my raw print job"
+    p.append_raw_print_job(t)
+    assert p.current_raw_print_job == t
+    assert p.printing_raw_job == True
+    p.save_raw_print_job()
+    assert p.printing_raw_job == False
+    assert p.current_raw_print_job == ''
+
+    files_list = glob(os.path.join("uploads", '*.txt'))
+    a = sorted(files_list, reverse=True)[0]
+    assert os.path.isfile(a) == True
+
+    contents = ''
+    with open(a, 'r') as f:
+        contents = f.read()
+    assert contents == t
+
 
 def test_rdymsg():
     p = Printer(logger)

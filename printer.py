@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from pyfakefs import fake_filesystem
 import re
+from datetime import datetime
 
 class Printer:
     def __init__(self, logger, printer_id="hp LaserJet 4200", code=10001, ready_msg="Ready", online=True):
@@ -30,6 +31,8 @@ class Printer:
         self.rexp = re.compile(r'\s+(\S+)\s+=\s+(?:"([^=]+)"|(\S+))')  # Compile once to decrease match time over multiple uses
         self.fs = fake_filesystem.FakeFilesystem()
         self.fos = fake_filesystem.FakeOsModule(self.fs)
+        self.printing_raw_job = False
+        self.current_raw_print_job = ''
 
         # Filesystem from HP LaserJet 4200n
         self.fs.create_dir("/PJL")
@@ -47,6 +50,14 @@ class Printer:
         self.fs.create_file("/webServer/lib/keys")
         self.fs.create_file("/webServer/lib/security")
     
+
+    def append_raw_print_job(self, text):
+        self.logger.debug(("append_raw_print_job - append - " + text).encode('utf-8'))
+        self.printing_raw_job = True
+        self.current_raw_print_job += text
+        self.logger.info("append_raw_print_job - response - Sending empty response")
+        return ''
+
 
     def get_parameters(self, command):
         '''
@@ -250,4 +261,17 @@ class Printer:
         self.logger.info("ustatusoff - request - Request received")
         self.logger.info("ustatusoff - response - Sending empty reply")
         return ''
+
+
+    def save_raw_print_job(self):
+        # Save self.current_raw_print_job to local file
+        filename = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S-%f") + ".txt"
+        if self.current_raw_print_job:
+            self.logger.info("save_raw_print_job - saving - " + filename)
+            with open("./uploads/" + filename, 'w') as f:
+                f.write(self.current_raw_print_job)
+            self.current_raw_print_job = ''
+            self.printing_raw_job = False
+        else:
+            self.logger.info("save_raw_print_job - saving - Nothing to save")
 

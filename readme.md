@@ -14,6 +14,21 @@ miniprint acts like a standard networked printer that has been accidentally expo
 
 It speaks the Printer Job Language (PJL) over the raw network "protocol"
 
+## Usage
+```
+usage: miniprint [-b,--bind HOST] [-l,--log-file FILE] [-t,--time-out TIME] [-h]
+
+miniprint - a medium interaction printer honeypot
+       by Dan Salmon: @BLTjetpack, github.com/sa7mon 
+
+optional arguments:
+  -b, --bind <host>       Bind the server to <host> (default: localhost)
+  -l, --log-file <file>   Save all logs to <file> (default: ./miniprint.log)
+  -t, --timeout <time>    Wait up to <time> seconds for commands before disconnecting client (default: 120)
+
+  -h, --help  show this help message and exit
+```
+
 ## Logs
 Logs are in format: `time - loglevel - method - operation - message`
 
