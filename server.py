@@ -91,8 +91,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         results = re.split('(@PJL)', text)
         results = [x for x in results if x]  # In case we have empty list elements
         
-        for i in range(len(results)):
-            if results[i] == '@PJL':
+        for i, result in enumerate(results):
+            if result == '@PJL':
                 continue
             elif i > 0 and results[i-1] == '@PJL':
                 commands.append('@PJL' + results[i])
