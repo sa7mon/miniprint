@@ -51,6 +51,7 @@ def test_fsdownload():
     r = p.command_fsquery('@PJL FSQUERY NAME="0:/test2.txt"')
     assert r == '@PJL FSQUERY NAME="0:/test2.txt" TYPE=FILE SIZE=77'
 
+
 def test_fsquery():
     p = Printer(logger)
     r = p.command_fsquery('@PJL FSQUERY NAME="0:/webServer"')
@@ -126,6 +127,18 @@ def test_info_status_custom():
     r = p.command_info_status("")
     assert r == '@PJL INFO STATUS\r\nCODE=140\r\nDISPLAY="testing"\r\nONLINE=True'
     
+
+def test_raw_print_job():
+    p = Printer(logger)
+    t = "this is the first line of my raw print job"
+    p.append_raw_print_job(t)
+    assert p.current_raw_print_job == t
+    assert p.printing_raw_job == True
+    p.save_raw_print_job()
+    assert p.printing_raw_job == False
+    assert p.current_raw_print_job == ''
+    # TODO: Verify text file got written to /uploads/
+
 
 def test_rdymsg():
     p = Printer(logger)
