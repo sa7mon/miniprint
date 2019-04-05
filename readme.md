@@ -88,6 +88,9 @@ Logs are in format: `time - loglevel - method - operation - message`
 | File System       |         FSQUERY         |   Yes   |
 | File System       |         FSUPLOAD        |   Yes   |
 
+## Known Issues
+  * PostScript files printed that don't contain `%%EOF` at the end will cause the printer to wait indefinitely for the end of the job.
+
 ## Thanks
   * frbexiga at BinaryEdge
   * Jens Müller for the [hacking-printers.net](https://hacking-printers.net/wiki/) wiki
