@@ -138,8 +138,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 printer.postscript_data += request
 
                 if '%%EOF' in request:
-                    printer.receiving_postscript = False
                     printer.save_postscript()
+                    printer.receiving_postscript = False
 
                 continue
             
