@@ -130,6 +130,30 @@ def test_info_status_custom():
     assert r == '@PJL INFO STATUS\r\nCODE=140\r\nDISPLAY="testing"\r\nONLINE=True'
     
 
+def test_postscript_job():
+    p = Printer(logger)
+    t = '''%!
+    (Hello World) print
+    %%EOF'''
+    p.receiving_postscript = True
+    p.postscript_data += t
+    assert p.postscript_data == t
+
+    p.save_postscript()
+    assert p.postscript_data == ''
+    assert p.receiving_postscript == False
+
+
+    files_list = glob(os.path.join("uploads", '*.ps'))
+    a = sorted(files_list, reverse=True)[0]
+    assert os.path.isfile(a) == True
+
+    contents = ''
+    with open(a, 'r') as f:
+        contents = f.read()
+    assert contents == t
+
+
 def test_raw_print_job():
     p = Printer(logger)
     t = "TEST - this is the first line of my raw print job"

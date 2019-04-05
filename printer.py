@@ -33,6 +33,8 @@ class Printer:
         self.fos = fake_filesystem.FakeOsModule(self.fs)
         self.printing_raw_job = False
         self.current_raw_print_job = ''
+        self.receiving_postscript = False
+        self.postscript_data = ''
 
         # Filesystem from HP LaserJet 4200n
         self.fs.create_dir("/PJL")
@@ -261,6 +263,18 @@ class Printer:
         self.logger.info("ustatusoff - request - Request received")
         self.logger.info("ustatusoff - response - Sending empty reply")
         return ''
+            
+
+    def save_postscript(self):
+        filename = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S-%f") + ".ps"
+        if self.receiving_postscript:
+            self.logger.info("save_postscript - saving - " + filename)
+            with open("./uploads/" + filename, 'w') as f:
+                f.write(self.postscript_data)
+            self.postscript_data = ''
+            self.receiving_postscript = False
+        else:
+            self.logger.info("save_postscript - saving - Nothing to save!")
 
 
     def save_raw_print_job(self):
