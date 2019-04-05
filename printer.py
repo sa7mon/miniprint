@@ -265,7 +265,7 @@ class Printer:
 
     def save_raw_print_job(self):
         # Save self.current_raw_print_job to local file
-        filename = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S-%f")
+        filename = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S-%f") + ".txt"
         if self.current_raw_print_job:
             self.logger.info("save_raw_print_job - saving - " + filename)
             with open("./uploads/" + filename, 'w') as f:

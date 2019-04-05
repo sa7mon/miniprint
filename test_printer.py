@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from printer import Printer
 import logging
+from glob import glob
+import os
 
 logger = logging.getLogger('miniprint')
 logger.setLevel(logging.DEBUG)
@@ -130,14 +132,22 @@ def test_info_status_custom():
 
 def test_raw_print_job():
     p = Printer(logger)
-    t = "this is the first line of my raw print job"
+    t = "TEST - this is the first line of my raw print job"
     p.append_raw_print_job(t)
     assert p.current_raw_print_job == t
     assert p.printing_raw_job == True
     p.save_raw_print_job()
     assert p.printing_raw_job == False
     assert p.current_raw_print_job == ''
-    # TODO: Verify text file got written to /uploads/
+
+    files_list = glob(os.path.join("uploads", '*.txt'))
+    a = sorted(files_list, reverse=True)[0]
+    assert os.path.isfile(a) == True
+
+    contents = ''
+    with open(a, 'r') as f:
+        contents = f.read()
+    assert contents == t
 
 
 def test_rdymsg():
