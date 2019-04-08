@@ -35,13 +35,6 @@ Logs are in format: `time - loglevel - method - operation - message`
 ## Requirements
   * Python >= 3.5
 
-## Printer Language Support
-| **Language** | **Support** |
-|:------------:|:-----------:|
-|      PJL     |      No     |
-|      PCL     |      No     |
-|  PostScript  |      No     |
-
 ## Printer Protocol Support
 | Protocol | Port | Support |
 |:--------:|:----:|:-------:|
@@ -49,6 +42,22 @@ Logs are in format: `time - loglevel - method - operation - message`
 |    Web   |  80  |    No   |
 |    IPP   |  631 |    No   |
 |    LPD   |  515 |    No   |
+
+## Printer Control Language Support
+| **Language** | **Support** |
+|:------------:|:-----------:|
+|      PJL     |      Yes    |
+|      PML     |      No     |
+|  PostScript  |      No     |
+
+## Page Description Language Support
+| **Language** | **Support** |
+|:------------:|:-----------:|
+|      PDF     |      Yes    |
+|      XPS     |      No     |
+|  PostScript  |      No     |
+|   Plaintext  |      Yes    |
+|      PCL     |      No     |
 
 ## Known Issues
   * PostScript files printed that don't contain `%%EOF` at the end will cause the printer to wait indefinitely for the end of the job.
