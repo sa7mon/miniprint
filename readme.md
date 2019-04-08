@@ -50,44 +50,6 @@ Logs are in format: `time - loglevel - method - operation - message`
 |    IPP   |  631 |    No   |
 |    LPD   |  515 |    No   |
 
-## PJL Support
-
-|      Category     | PJL Command/Sub-command | Support |
-|:-----------------:|:-----------------------:|:-------:|
-| Kernel            |          ENTER          |         |
-| Kernel            |         COMMENT         |         |
-| Job Separation    |           JOB           |         |
-| Job Separation    |           EOJ           |         |
-| Environment       |         DEFAULT         |         |
-| Environment       |        INITIALIZE       |         |
-| Environment       |          RESET          |         |
-| Environment       |           SET           |         |
-| Status Readback   |         INQUIRE         |         |
-| Status Readback   |         DINQUIRE        |         |
-| Status Readback   |           ECHO          |         |
-| Status Readback   |         INFO ID         |   Yes   |
-| Status Readback   |       INFO CONFIG       |         |
-| Status Readback   |       INFO FILESYS      |         |
-| Status Readback   |       INFO MEMORY       |         |
-| Status Readback   |      INFO PAGECOUNT     |         |
-| Status Readback   |       INFO STATUS       |   Yes   |
-| Status Readback   |      INFO VARIABLES     |         |
-| Status Readback   |       INFO USTATUS      |         |
-| Status Readback   |         USTATUS         |         |
-| Status Readback   |          TIMED          |         |
-| Status Readback   |        USTATUSOFF       |   Yes   |
-| Device Attendance |          RDYMSG         |         |
-| Device Attendance |          OPMSG          |         |
-| Device Attendance |          STMSG          |         |
-| File System       |         FSAPPEND        |         |
-| File System       |        FSDIRLIST        |   Yes   |
-| File System       |         FSDELETE        |         |
-| File System       |        FSDOWNLOAD       |   Yes   |
-| File System       |          FSINIT         |         |
-| File System       |         FSMKDIR         |   Yes   |
-| File System       |         FSQUERY         |   Yes   |
-| File System       |         FSUPLOAD        |   Yes   |
-
 ## Known Issues
   * PostScript files printed that don't contain `%%EOF` at the end will cause the printer to wait indefinitely for the end of the job.
 
