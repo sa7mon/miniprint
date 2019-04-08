@@ -15,7 +15,7 @@ miniprint acts like a standard networked printer that has been accidentally expo
 It speaks the Printer Job Language (PJL) over the raw network "protocol"
 
 ## Features
-* A fully-featured virtual filesystem in which attackers can read and write files and directories
+* A fully-featured virtual filesystem in which attackers can read and write files and directories - nothing gets written to the host
 * Any PostScript or plaintext print jobs sent to the printer will be saved to the `uploads/` directory
 * Extensive (probably too much) logging
 * Shodan Honeycore: 0
