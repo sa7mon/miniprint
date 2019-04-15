@@ -59,7 +59,6 @@ Logs are generated in format: `time - loglevel - method - operation - message` a
 |:------------:|:-----------:|
 |      PJL     |      [Yes](https://github.com/sa7mon/miniprint/wiki/PJL-Command-Support)    |
 |      PML     |      No     |
-|  PostScript  |      No     |
 
 ## Page Description Language Support
 | **Language** | **Support** |
