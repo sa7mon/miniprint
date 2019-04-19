@@ -23,7 +23,7 @@ It speaks the Printer Job Language (PJL) over the raw network "protocol"
 ## Installation
 1. `virtualenv venv && source ./venv/bin/activate` (optional)
 1. `pip install -r requirements.txt`
-1. `python3 ./miniprint.py`
+1. `python3 ./server.py`
 
 ## Usage
 ```
