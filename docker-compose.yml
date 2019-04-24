@@ -1,0 +1,10 @@
+version: '2.1'
+
+services:
+  miniprint:
+    image: miniprint
+    hostname: miniprint
+    build:
+      context: .
+    ports:
+      - "9100:9100"
